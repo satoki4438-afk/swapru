@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -284,28 +284,56 @@ export default function SwapApp() {
   const handleLogin = async () => {
     try {
       setAuthState("logging_in");
-      const result = await signInWithPopup(auth, provider);
-      const u = {
-        uid: result.user.uid,
-        name: result.user.displayName,
-        email: result.user.email,
-        avatar: result.user.displayName?.charAt(0) || "U",
-        method: "google"
-      };
-      setUser(u);
-      setProfileForm(f => ({ ...f, name: u.name, location: "東京都" }));
-      setAuthState("app");
-      showToast("✅ Googleでログインしました");
-      loadMyItems(result.user.uid);
+      await signInWithRedirect(auth, provider);
     } catch (e) {
       setAuthState("landing");
       showToast("❌ ログインに失敗しました");
     }
   };
 
+  // リダイレクト後の結果を取得
+  useEffect(() => {
+    getRedirectResult(auth).then(result => {
+      if (result?.user) {
+        const u = {
+          uid: result.user.uid,
+          name: result.user.displayName,
+          email: result.user.email,
+          avatar: result.user.displayName?.charAt(0) || "U",
+          method: "google"
+        };
+        setUser(u);
+        setProfileForm(f => ({ ...f, name: u.name, location: "東京都" }));
+        setAuthState("app");
+        showToast("✅ Googleでログインしました");
+        loadMyItems(result.user.uid);
+      }
+    }).catch(e => {
+      setAuthState("landing");
+    });
+
+    // ログイン状態を永続化
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const u = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          avatar: firebaseUser.displayName?.charAt(0) || "U",
+          method: "google"
+        };
+        setUser(u);
+        setProfileForm(f => ({ ...f, name: u.name || f.name, location: f.location || "東京都" }));
+        setAuthState("app");
+        loadMyItems(firebaseUser.uid);
+      }
+    });
+    return () => unsub();
+  }, []);
+
   // ── LANDING ──
   if (authState !== "app") return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -353,7 +381,7 @@ export default function SwapApp() {
   if (view === "chat" && openThread) {
     const thread = openThread;
     return (
-      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: "100%", margin: "0 auto", display: "flex", flexDirection: "column" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
           *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -447,7 +475,7 @@ export default function SwapApp() {
 
   // ── MAIN APP SHELL ──
   return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: 430, margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: "100%", margin: "0 auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -979,7 +1007,7 @@ export default function SwapApp() {
       {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
 
       {/* ── BOTTOM NAV ── */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
         {[["🏠","ホーム","home"],["🔍","さがす","list"],["➕","投稿",null],["💬","メッセージ","messages"],["👤","マイページ","mypage"]].map(([icon, label, v]) => (
           <button key={label} onClick={() => v ? setView(v) : setShowPostModal(true)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, cursor: "pointer", padding: "2px 0", position: "relative" }}>
             {label === "投稿" ? (
