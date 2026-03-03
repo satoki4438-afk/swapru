@@ -1007,7 +1007,7 @@ export default function SwapApp() {
       {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
 
       {/* ── BOTTOM NAV ── */}
-      <div style={{ position: "fixed", bottom: 0, left: 0, width: "100%", background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
         {[["🏠","ホーム","home"],["🔍","さがす","list"],["➕","投稿",null],["💬","メッセージ","messages"],["👤","マイページ","mypage"]].map(([icon, label, v]) => (
           <button key={label} onClick={() => v ? setView(v) : setShowPostModal(true)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, cursor: "pointer", padding: "2px 0", position: "relative" }}>
             {label === "投稿" ? (
