@@ -881,7 +881,7 @@ export default function SwapApp() {
             <div style={{ background: "#fff", borderRadius: 13, padding: 15, marginBottom: 11 }}>
               {/* 画像 */}
               <div style={{ marginBottom: 13 }}>
-                <input type="file" accept="image/*" multiple id="imageUpload" style={{ display: "none" }} onChange={async (e) => {
+                <input type="file" accept="image/*" multiple ref={el => window._imgInput = el} style={{ display: "none" }} onChange={async (e) => {
                   const files = Array.from(e.target.files);
                   if (!files.length || !user) return;
                   setPostForm(f => ({ ...f, uploading: true }));
@@ -896,7 +896,7 @@ export default function SwapApp() {
                     setPostForm(f => ({ ...f, imageUrls: [...(f.imageUrls || []), ...urls], uploading: false }));
                   } catch(e) { setPostForm(f => ({ ...f, uploading: false })); showToast("❌ アップロード失敗"); }
                 }} />
-                <label htmlFor="imageUpload" style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#fafafa" }}>
+                <div onClick={() => window._imgInput?.click()} style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#fafafa" }}>
                   {postForm.uploading ? (
                     <div style={{ textAlign: "center" }}>
                       <div style={{ width: 28, height: 28, border: "3px solid #d4a574", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 6px", animation: "spin .8s linear infinite" }} />
@@ -909,7 +909,7 @@ export default function SwapApp() {
                       <p style={{ fontSize: 10, color: "#b4a494" }}>タップして選択（最大6枚）</p>
                     </>
                   )}
-                </label>
+                </div>
                 {postForm.imageUrls?.length > 0 && (
                   <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
                     {postForm.imageUrls.map((url, i) => (
