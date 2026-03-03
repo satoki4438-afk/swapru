@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
-import { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -284,35 +284,27 @@ export default function SwapApp() {
   const handleLogin = async () => {
     try {
       setAuthState("logging_in");
-      await signInWithRedirect(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      const u = {
+        uid: result.user.uid,
+        name: result.user.displayName,
+        email: result.user.email,
+        avatar: result.user.displayName?.charAt(0) || "U",
+        method: "google"
+      };
+      setUser(u);
+      setProfileForm(f => ({ ...f, name: u.name, location: "東京都" }));
+      setAuthState("app");
+      showToast("✅ Googleでログインしました");
+      loadMyItems(result.user.uid);
     } catch (e) {
       setAuthState("landing");
       showToast("❌ ログインに失敗しました");
     }
   };
 
-  // リダイレクト後の結果を取得
+  // ログイン状態を永続化
   useEffect(() => {
-    getRedirectResult(auth).then(result => {
-      if (result?.user) {
-        const u = {
-          uid: result.user.uid,
-          name: result.user.displayName,
-          email: result.user.email,
-          avatar: result.user.displayName?.charAt(0) || "U",
-          method: "google"
-        };
-        setUser(u);
-        setProfileForm(f => ({ ...f, name: u.name, location: "東京都" }));
-        setAuthState("app");
-        showToast("✅ Googleでログインしました");
-        loadMyItems(result.user.uid);
-      }
-    }).catch(e => {
-      setAuthState("landing");
-    });
-
-    // ログイン状態を永続化
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         const u = {
@@ -326,6 +318,8 @@ export default function SwapApp() {
         setProfileForm(f => ({ ...f, name: u.name || f.name, location: f.location || "東京都" }));
         setAuthState("app");
         loadMyItems(firebaseUser.uid);
+      } else {
+        setAuthState("landing");
       }
     });
     return () => unsub();
@@ -333,7 +327,7 @@ export default function SwapApp() {
 
   // ── LANDING ──
   if (authState !== "app") return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 480, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
