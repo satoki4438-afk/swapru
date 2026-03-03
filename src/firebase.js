@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVvVXYMT7oaDIXUfQk1of0Jnj-RnAWUHU",
-  authDomain: "swapru.firebaseapp.com",
+  authDomain: "swapru.vercel.app",
   projectId: "swapru",
   storageBucket: "swapru.firebasestorage.app",
   messagingSenderId: "310180077020",
