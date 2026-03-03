@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { auth, provider, db } from "./firebase";
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, signOut } from "firebase/auth";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -303,28 +303,6 @@ export default function SwapApp() {
     }
   };
 
-  // ログイン状態を永続化
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        const u = {
-          uid: firebaseUser.uid,
-          name: firebaseUser.displayName,
-          email: firebaseUser.email,
-          avatar: firebaseUser.displayName?.charAt(0) || "U",
-          method: "google"
-        };
-        setUser(u);
-        setProfileForm(f => ({ ...f, name: u.name || f.name, location: f.location || "東京都" }));
-        setAuthState("app");
-        loadMyItems(firebaseUser.uid);
-      } else {
-        setAuthState("landing");
-      }
-    });
-    return () => unsub();
-  }, []);
-
   // ── LANDING ──
   if (authState !== "app") return (
     <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
@@ -375,7 +353,7 @@ export default function SwapApp() {
   if (view === "chat" && openThread) {
     const thread = openThread;
     return (
-      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: "100%", margin: "0 auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
           *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -469,7 +447,7 @@ export default function SwapApp() {
 
   // ── MAIN APP SHELL ──
   return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: "100%", margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: 430, margin: "0 auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
