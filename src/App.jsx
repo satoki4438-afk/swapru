@@ -210,6 +210,7 @@ export default function SwapApp() {
   const [postForm, setPostForm] = useState({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false });
 
   const [toast, setToast] = useState(null);
+  const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
   const toggleLike = (id, e) => { e.stopPropagation(); setLikedItems(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]); };
   const openDetail = (item) => { if (!item) return; setSelectedItem(item); setView("detail"); setSelectedMyItem(null); window.scrollTo(0, 0); };
@@ -360,7 +361,7 @@ export default function SwapApp() {
             <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.979C23.209 14.146 24 12.459 24 10.314"/></svg>
             <span style={{ fontWeight: 700, fontSize: 15, color: "#fff", flex: 1, textAlign: "center" }}>LINEでログイン</span>
           </button>
-          <p style={{ color: "#6a5a4a", fontSize: 10, textAlign: "center", lineHeight: 1.7 }}>ログインで<span style={{ color: "#d4a574" }}>利用規約</span>・<span style={{ color: "#d4a574" }}>プライバシーポリシー</span>に同意</p>
+          <p style={{ color: "#6a5a4a", fontSize: 10, textAlign: "center", lineHeight: 1.7 }}>ログインで<span onClick={() => setLegalModal("terms")} style={{ color: "#d4a574", cursor: "pointer" }}>利用規約</span>・<span onClick={() => setLegalModal("privacy")} style={{ color: "#d4a574", cursor: "pointer" }}>プライバシーポリシー</span>に同意</p>
         </div>
       ) : (
         <div style={{ textAlign: "center" }}>
@@ -724,8 +725,8 @@ export default function SwapApp() {
             </div>
 
             {/* Tab bar */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#fff", borderBottom: "1px solid #e8dfd0" }}>
-              {[["listings", "📦 出品管理"], ["settings", "⚙ プロフィール設定"]].map(([tab, label]) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#fff", borderBottom: "1px solid #e8dfd0" }}>
+              {[["listings", "📦 出品管理"], ["history", "🔄 取引履歴"], ["settings", "⚙ 設定"]].map(([tab, label]) => (
                 <button key={tab} onClick={() => setMypageTab(tab)} className="bp" style={{ background: "none", border: "none", padding: "11px 0", fontWeight: 700, fontSize: 12, color: mypageTab === tab ? "#c4813a" : "#8a7a6a", cursor: "pointer", borderBottom: mypageTab === tab ? "2px solid #c4813a" : "2px solid transparent" }}>{label}</button>
               ))}
             </div>
@@ -772,27 +773,89 @@ export default function SwapApp() {
                   </div>
                 ))}
 
-                {/* 取引履歴 */}
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: "#1a1208", margin: "16px 0 9px" }}>取引履歴</h3>
-                {[{ id: "t1", myItem: "ミラーレスカメラ", theirItem: "エレキギター", partner: "music_fan", date: "2025/12/10", status: "完了" }, { id: "t2", myItem: "キーボード", theirItem: "コントローラー", partner: "gamer_pro", date: "2025/11/28", status: "完了" }].map(t => (
-                  <div key={t.id} style={{ background: "#fff", borderRadius: 12, padding: 12, marginBottom: 7, boxShadow: "0 2px 8px rgba(0,0,0,.05)" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208" }}>{t.myItem} ⟳ {t.theirItem}</p>
-                        <p style={{ fontSize: 10, color: "#8a7a6a" }}>@{t.partner} · {t.date}</p>
-                      </div>
-                      <span style={{ background: "#dcfce7", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: "#16a34a" }}>{t.status}</span>
-                    </div>
-                    <div style={{ marginTop: 7, background: "#dcfce7", borderRadius: 7, padding: "4px 9px" }}>
-                      <p style={{ fontSize: 10, color: "#15803d", fontWeight: 600 }}>✅ 手数料 ¥0 で交換成立！</p>
-                    </div>
-                  </div>
-                ))}
-
                 <div style={{ marginTop: 14 }}>
                   <p style={{ fontSize: 10, color: "#8a7a6a", fontWeight: 600, letterSpacing: 1, marginBottom: 7 }}>PR · おすすめ</p>
                   {AFFILIATE_ADS.map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}
                 </div>
+              </div>
+            )}
+
+            {/* ── 取引履歴タブ ── */}
+            {mypageTab === "history" && (
+              <div style={{ padding: 14 }}>
+
+                {/* 進行中 */}
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#c4813a", letterSpacing: 1, marginBottom: 9 }}>⏳ 進行中</p>
+                {threads.filter(t => t.status === "交渉中").length === 0 ? (
+                  <div style={{ background: "#fff", borderRadius: 12, padding: "20px", textAlign: "center", color: "#8a7a6a", marginBottom: 18 }}>
+                    <p style={{ fontSize: 13 }}>進行中の取引はありません</p>
+                  </div>
+                ) : threads.filter(t => t.status === "交渉中").map(t => (
+                  <div key={t.id} onClick={() => openChat(t)} className="ph" style={{ background: "#fff", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)", border: "1px solid #fcd34d" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.myItemImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.myItem}</p>
+                      </div>
+                      <div style={{ color: "#d4a574", fontSize: 18, fontWeight: 700 }}>⟳</div>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.partnerItemImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.partnerItem}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <p style={{ fontSize: 11, color: "#8a7a6a" }}>@{t.partner}</p>
+                      <span style={{ background: "#fef3c7", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#d97706" }}>💬 交渉中 →</span>
+                    </div>
+                  </div>
+                ))}
+
+                {/* 完了済み */}
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", letterSpacing: 1, marginBottom: 9, marginTop: 4 }}>✅ 完了済み</p>
+                {threads.filter(t => t.status === "交換成立").map(t => (
+                  <div key={t.id} style={{ background: "#fff", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.myItemImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.myItem}</p>
+                      </div>
+                      <div style={{ color: "#d4a574", fontSize: 18, fontWeight: 700 }}>⟳</div>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.partnerItemImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.partnerItem}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <p style={{ fontSize: 11, color: "#8a7a6a" }}>@{t.partner}</p>
+                      <span style={{ background: "#dcfce7", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#16a34a" }}>✅ 交換成立</span>
+                    </div>
+                    <div style={{ marginTop: 7, background: "#dcfce7", borderRadius: 8, padding: "5px 10px" }}>
+                      <p style={{ fontSize: 10, color: "#15803d", fontWeight: 600 }}>手数料 ¥0 で交換成立！</p>
+                    </div>
+                  </div>
+                ))}
+                {[{ id: "t1", myItem: "ミラーレスカメラ", myImage: "📸", theirItem: "エレキギター", theirImage: "🎸", partner: "music_fan", date: "2025/12/10" }, { id: "t2", myItem: "キーボード", myImage: "🎹", theirItem: "コントローラー", theirImage: "🎮", partner: "gamer_pro", date: "2025/11/28" }].map(t => (
+                  <div key={t.id} style={{ background: "#fff", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.myImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.myItem}</p>
+                      </div>
+                      <div style={{ color: "#d4a574", fontSize: 18, fontWeight: 700 }}>⟳</div>
+                      <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                        <div style={{ fontSize: 24 }}>{t.theirImage}</div>
+                        <p style={{ fontSize: 9, fontWeight: 600, color: "#1a1208", marginTop: 2 }}>{t.theirItem}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <p style={{ fontSize: 11, color: "#8a7a6a" }}>@{t.partner} · {t.date}</p>
+                      <span style={{ background: "#dcfce7", borderRadius: 20, padding: "3px 10px", fontSize: 10, fontWeight: 700, color: "#16a34a" }}>✅ 完了</span>
+                    </div>
+                    <div style={{ marginTop: 7, background: "#dcfce7", borderRadius: 8, padding: "5px 10px" }}>
+                      <p style={{ fontSize: 10, color: "#15803d", fontWeight: 600 }}>手数料 ¥0 で交換成立！</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -849,9 +912,9 @@ export default function SwapApp() {
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1208" }}>{user?.method === "google" ? "🔵 Google アカウント" : "🟢 LINE アカウント"}</p>
                     {user?.email && <p style={{ fontSize: 11, color: "#8a7a6a", marginTop: 2 }}>{user.email}</p>}
                   </div>
-                  <button className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>📋 利用規約を見る</button>
-                  <button className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>🔒 プライバシーポリシー</button>
-                  <button className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>📮 お問い合わせ</button>
+                  <button onClick={() => setLegalModal("terms")} className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>📋 利用規約を見る</button>
+                  <button onClick={() => setLegalModal("privacy")} className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>🔒 プライバシーポリシー</button>
+                  <button onClick={() => setLegalModal("contact")} className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>📮 お問い合わせ</button>
                 </div>
 
                 <button onClick={() => { setUser(null); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #e8dfd0", borderRadius: 12, padding: 12, color: "#8a7a6a", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
@@ -1034,7 +1097,75 @@ export default function SwapApp() {
         </div>
       )}
 
-      {/* ── TOAST ── */}
+
+      {/* ── LEGAL MODAL ── */}
+      {legalModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 2000, display: "flex", alignItems: "flex-end" }} onClick={() => setLegalModal(null)}>
+          <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+            <div style={{ position: "sticky", top: 0, background: "#f0ede8", padding: "14px 18px 10px", borderBottom: "1px solid #e8dfd0", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <h2 style={{ fontSize: 16, fontWeight: 800, color: "#1a1208" }}>
+                {legalModal === "terms" && "📋 利用規約"}
+                {legalModal === "privacy" && "🔒 プライバシーポリシー"}
+                {legalModal === "contact" && "📮 お問い合わせ"}
+              </h2>
+              <button onClick={() => setLegalModal(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#8a7a6a" }}>✕</button>
+            </div>
+            <div style={{ padding: "18px 18px 40px", fontSize: 12, color: "#3d2b15", lineHeight: 1.9 }}>
+
+              {legalModal === "terms" && (<>
+                <p style={{ fontSize: 10, color: "#8a7a6a", marginBottom: 16 }}>最終更新日：2026年3月1日</p>
+                {[
+                  ["第1条（目的）", "本規約は、Swapru（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には本規約に従って本サービスをご利用いただきます。"],
+                  ["第2条（サービスの内容）", "本サービスは、ユーザー同士が不用品を無償で交換するためのマッチングプラットフォームです。運営者は取引の当事者ではなく、交換の成立・履行・結果について一切の責任を負いません。"],
+                  ["第3条（免責事項）", "本サービスを通じて行われる取引はすべてユーザー間の個人取引です。取引に関するトラブル（商品の不具合、未着、破損、詐欺等）は、当事者間で解決していただく必要があります。運営者はいかなる場合も取引トラブルへの介入・補償・賠償を行いません。"],
+                  ["第4条（禁止事項）", "偽りの情報による出品・詐欺的行為、他ユーザーへの嫌がらせ・誹謗中傷、違法物・危険物の出品、著作権を侵害するコンテンツの投稿、その他法令に違反する行為を禁止します。"],
+                  ["第5条（アカウントの管理）", "ユーザーは自己の責任においてアカウントを管理するものとします。アカウントの不正使用による損害について、運営者は責任を負いません。"],
+                  ["第6条（サービスの変更・終了）", "運営者は事前の通知なく本サービスの内容を変更、または提供を終了することがあります。これによりユーザーに生じた損害について、運営者は責任を負いません。"],
+                  ["第7条（規約の変更）", "運営者は必要に応じて本規約を変更できるものとします。変更後の規約はサービス上に掲載した時点で効力を生じます。"],
+                ].map(([title, body]) => (
+                  <div key={title} style={{ marginBottom: 18 }}>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 5 }}>{title}</p>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </>)}
+
+              {legalModal === "privacy" && (<>
+                <p style={{ fontSize: 10, color: "#8a7a6a", marginBottom: 16 }}>最終更新日：2026年3月1日</p>
+                {[
+                  ["取得する情報", "Googleログイン時に取得する情報：お名前、メールアドレス、プロフィール写真。出品時に取得する情報：商品画像、商品説明、交換希望内容。"],
+                  ["情報の利用目的", "取得した情報は、サービスの提供・改善、ユーザー間のマッチング、不正利用の防止のみに使用します。第三者への販売・提供は行いません。"],
+                  ["情報の保管", "取得した情報はFirebase（Google LLC）のサーバーに保管されます。"],
+                  ["Cookieについて", "本サービスではログイン状態の維持のためにCookieを使用しています。"],
+                  ["お問い合わせ", "個人情報の取扱いに関するお問い合わせは、本サービスのお問い合わせフォームよりご連絡ください。"],
+                ].map(([title, body]) => (
+                  <div key={title} style={{ marginBottom: 18 }}>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 5 }}>{title}</p>
+                    <p>{body}</p>
+                  </div>
+                ))}
+              </>)}
+
+              {legalModal === "contact" && (<>
+                <div style={{ background: "#fff", borderRadius: 13, padding: 16, marginBottom: 14 }}>
+                  <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 8 }}>📧 メールでのお問い合わせ</p>
+                  <p style={{ marginBottom: 12 }}>下記メールアドレスまでお気軽にご連絡ください。通常2〜3営業日以内にご返信いたします。</p>
+                  <div style={{ background: "#f7f4ef", borderRadius: 9, padding: "11px 13px", textAlign: "center" }}>
+                    <p style={{ fontWeight: 700, color: "#c4813a", fontSize: 13 }}>contact@swapru.app</p>
+                  </div>
+                </div>
+                <div style={{ background: "#fef9f0", border: "1px solid #f0e0c0", borderRadius: 13, padding: 14 }}>
+                  <p style={{ fontWeight: 700, fontSize: 12, color: "#c4813a", marginBottom: 6 }}>⚠️ 取引トラブルについて</p>
+                  <p>本サービスはユーザー間の個人取引のため、取引に関するトラブルは当事者間での解決をお願いしております。運営者は取引への介入・補償を行うことができません。</p>
+                </div>
+              </>)}
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── TOAST ── */
       {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
 
       {/* ── BOTTOM NAV ── */}
