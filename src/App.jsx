@@ -1165,7 +1165,7 @@ export default function SwapApp() {
         </div>
       )}
 
-      {/* ── TOAST ── */
+      {/* ── TOAST ── */}
       {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
 
       {/* ── BOTTOM NAV ── */}
