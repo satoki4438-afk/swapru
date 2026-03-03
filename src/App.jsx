@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { auth, provider, db } from "./firebase";
-import { signInWithPopup, signOut } from "firebase/auth";
+import { auth, provider, db, storage } from "./firebase";
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ function ItemCard({ item, liked, onLike, onClick, delay = 0 }) {
   return (
     <div className="ph" onClick={onClick} style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animation: `up .34s ease ${delay}ms both` }}>
       <div style={{ background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", height: 100, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, position: "relative" }}>
-        {item.image}
+        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}
         <button onClick={e => onLike(item.id, e)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(255,255,255,.9)", border: "none", borderRadius: "50%", width: 26, height: 26, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {liked ? "❤️" : "🤍"}
         </button>
@@ -206,7 +207,7 @@ export default function SwapApp() {
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", notify_message: true, notify_match: true, notify_news: false });
 
   // Post form
-  const [postForm, setPostForm] = useState({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷" });
+  const [postForm, setPostForm] = useState({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false });
 
   const [toast, setToast] = useState(null);
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
@@ -303,6 +304,28 @@ export default function SwapApp() {
     }
   };
 
+  // ログイン状態を永続化
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        const u = {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName,
+          email: firebaseUser.email,
+          avatar: firebaseUser.displayName?.charAt(0) || "U",
+          method: "google"
+        };
+        setUser(u);
+        setProfileForm(f => ({ ...f, name: u.name || f.name, location: f.location || "東京都" }));
+        setAuthState("app");
+        loadMyItems(firebaseUser.uid);
+      } else {
+        setAuthState("landing");
+      }
+    });
+    return () => unsub();
+  }, []);
+
   // ── LANDING ──
   if (authState !== "app") return (
     <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#1a1208", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
@@ -353,7 +376,7 @@ export default function SwapApp() {
   if (view === "chat" && openThread) {
     const thread = openThread;
     return (
-      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: "100%", margin: "0 auto", display: "flex", flexDirection: "column" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
           *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -447,7 +470,7 @@ export default function SwapApp() {
 
   // ── MAIN APP SHELL ──
   return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: 430, margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", minHeight: "100vh", maxWidth: "100%", margin: "0 auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -575,7 +598,7 @@ export default function SwapApp() {
             <button onClick={() => setView("list")} style={{ margin: "12px 14px 0", background: "none", border: "none", color: "#5a4a3a", fontSize: 12, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>← 戻る</button>
             <div style={{ background: "#fff", margin: "9px 14px", borderRadius: 17, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}>
               <div style={{ background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", height: 180, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 76, position: "relative" }}>
-                {selectedItem.image}
+                {selectedItem.imageUrls?.[0] ? <img src={selectedItem.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : selectedItem.image}
                 <button onClick={e => toggleLike(selectedItem.id, e)} style={{ position: "absolute", bottom: 9, right: 9, background: "rgba(255,255,255,.9)", border: "none", borderRadius: "50%", width: 36, height: 36, fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>{likedItems.includes(selectedItem.id) ? "❤️" : "🤍"}</button>
               </div>
               <div style={{ padding: "15px 15px 17px" }}>
@@ -857,10 +880,46 @@ export default function SwapApp() {
             )}
             <div style={{ background: "#fff", borderRadius: 13, padding: 15, marginBottom: 11 }}>
               {/* 画像 */}
-              <div style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 13, position: "relative" }}>
-                <div style={{ fontSize: 28, marginBottom: 4 }}>{postForm.image}</div>
-                <p style={{ fontSize: 12, color: "#8a7a6a", fontWeight: 600 }}>写真を追加</p>
-                <p style={{ fontSize: 10, color: "#b4a494" }}>タップして選択（最大6枚）</p>
+              <div style={{ marginBottom: 13 }}>
+                <input type="file" accept="image/*" multiple id="imageUpload" style={{ display: "none" }} onChange={async (e) => {
+                  const files = Array.from(e.target.files);
+                  if (!files.length || !user) return;
+                  setPostForm(f => ({ ...f, uploading: true }));
+                  try {
+                    const urls = [];
+                    for (const file of files.slice(0, 6)) {
+                      const storageRef = ref(storage, `items/${user.uid}/${Date.now()}_${file.name}`);
+                      await uploadBytes(storageRef, file);
+                      const url = await getDownloadURL(storageRef);
+                      urls.push(url);
+                    }
+                    setPostForm(f => ({ ...f, imageUrls: [...(f.imageUrls || []), ...urls], uploading: false }));
+                  } catch(e) { setPostForm(f => ({ ...f, uploading: false })); showToast("❌ アップロード失敗"); }
+                }} />
+                <label htmlFor="imageUpload" style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#fafafa" }}>
+                  {postForm.uploading ? (
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ width: 28, height: 28, border: "3px solid #d4a574", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 6px", animation: "spin .8s linear infinite" }} />
+                      <p style={{ fontSize: 11, color: "#8a7a6a" }}>アップロード中...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 28, marginBottom: 4 }}>📷</span>
+                      <p style={{ fontSize: 12, color: "#8a7a6a", fontWeight: 600 }}>写真を追加</p>
+                      <p style={{ fontSize: 10, color: "#b4a494" }}>タップして選択（最大6枚）</p>
+                    </>
+                  )}
+                </label>
+                {postForm.imageUrls?.length > 0 && (
+                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+                    {postForm.imageUrls.map((url, i) => (
+                      <div key={i} style={{ position: "relative", flexShrink: 0 }}>
+                        <img src={url} style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 9, border: "2px solid #e8dfd0" }} />
+                        <button onClick={() => setPostForm(f => ({ ...f, imageUrls: f.imageUrls.filter((_, j) => j !== i) }))} style={{ position: "absolute", top: -6, right: -6, width: 20, height: 20, background: "#ef4444", border: "none", borderRadius: "50%", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* 絵文字アイコン選択 */}
               <div style={{ display: "flex", gap: 7, overflowX: "auto", marginBottom: 13, paddingBottom: 3 }}>
@@ -908,7 +967,7 @@ export default function SwapApp() {
                 showToast("✅ 出品を更新しました");
               } else {
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, condition: postForm.condition, image: postForm.image, status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
+                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
                 // Firestoreに保存
                 if (user) {
                   const docRef = await addDoc(collection(db, "users", user.uid, "items"), newItem);
@@ -918,7 +977,7 @@ export default function SwapApp() {
                 showToast(postType === "offer" ? "🎉 出品しました！" : "🙋 欲しいリストに投稿しました！");
               }
               setShowPostModal(false); setEditingItem(null);
-              setPostForm({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷" });
+              setPostForm({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false });
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 14, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               {editingItem ? "更新する" : postType === "offer" ? "無料で出品する" : "欲しいリストに投稿"}
             </button>
