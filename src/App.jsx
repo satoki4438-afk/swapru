@@ -66,7 +66,7 @@ const AFFILIATE_ADS = [
   { id: "af5", brand: "メルカリShops", tag: "PR", title: "交換できない場合はメルカリで", desc: "出品無料・全国配送対応", image: "🏪", cta: "メルカリを開く", url: "https://mercari-shops.com/", color: ["#FF0211", "#cc0010"], category: null },
 ];
 
-const CATEGORIES = ["すべて", "カメラ", "楽器", "ゲーム", "アウトドア", "家電", "自転車", "ファッション"];
+const CATEGORIES = ["すべて", "📷 カメラ・映像", "🎵 音楽・楽器", "🎮 ゲーム", "💻 スマホ・PC・家電", "👕 ファッション", "⛺ アウトドア・スポーツ", "📚 本・CD・メディア", "🧸 ホビー・コレクション", "🍳 キッチン・日用品", "🎁 お中元・お歳暮", "📦 その他"];
 const CONDITIONS = ["新品・未使用", "ほぼ新品", "良好", "目立つ傷あり", "傷・汚れあり"];
 const PREFECTURES = ["東京都", "神奈川県", "大阪府", "愛知県", "福岡県", "北海道", "宮城県", "埼玉県", "千葉県", "京都府", "兵庫県", "広島県", "長野県"];
 
@@ -207,7 +207,7 @@ export default function SwapApp() {
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", locationPrivate: false, notify_message: true, notify_match: true, notify_news: false, avatarUrl: null, avatarEmoji: null, preferredCategories: [] });
 
   // Post form
-  const [postForm, setPostForm] = useState({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false });
+  const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
 
   const [toast, setToast] = useState(null);
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
@@ -611,8 +611,14 @@ export default function SwapApp() {
                 <div style={{ display: "flex", gap: 5, marginBottom: 11, flexWrap: "wrap" }}>
                   <span style={{ background: "#f0ede8", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#5a4a3a" }}>{selectedItem.category}</span>
                   <span style={{ background: "#e8f5e9", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#2e7d32" }}>{selectedItem.condition}</span>
-                  <span style={{ background: "#dcfce7", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: "#16a34a" }}>手数料 ¥0</span>
                 </div>
+                {selectedItem.category === "🎁 お中元・お歳暮" && (selectedItem.expiryDate || selectedItem.shippingNote) && (
+                  <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 11, padding: 11, marginBottom: 11 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#d97706", marginBottom: 7 }}>🎁 食品・ギフト情報</p>
+                    {selectedItem.expiryDate && <p style={{ fontSize: 11, color: "#5a4a3a", marginBottom: 4 }}>📅 賞味期限：<span style={{ fontWeight: 700 }}>{selectedItem.expiryDate}</span></p>}
+                    {selectedItem.shippingNote && <p style={{ fontSize: 11, color: "#5a4a3a" }}>🚚 発送・保存：<span style={{ fontWeight: 700, color: selectedItem.shippingNote === "常温OK" ? "#16a34a" : "#d97706" }}>{selectedItem.shippingNote}</span></p>}
+                  </div>
+                )}
                 <div style={{ background: "#f7f4ef", borderRadius: 12, padding: 12, marginBottom: 11 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", marginBottom: 6 }}>↔ 交換希望</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{selectedItem.wantItems?.map(w => <span key={w} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: "#3d2b15" }}>{w}</span>)}</div>
@@ -1067,6 +1073,25 @@ export default function SwapApp() {
                   </select>
                 </div>
               </div>
+
+              {/* お中元・お歳暮専用フィールド */}
+              {postForm.category === "🎁 お中元・お歳暮" && (
+                <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 11, padding: 12, marginTop: 2 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#d97706", marginBottom: 10 }}>🎁 食品・ギフト情報</p>
+                  <div style={{ marginBottom: 10 }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>賞味期限 <span style={{ color: "#ef4444" }}>*</span></p>
+                    <input type="date" value={postForm.expiryDate} onChange={e => setPostForm(f => ({ ...f, expiryDate: e.target.value }))} style={{ width: "100%", background: "#fff", border: "1px solid #fcd34d", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208" }} />
+                  </div>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 6 }}>発送・保存方法</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {["常温OK", "冷蔵必要", "冷凍必要", "生もの注意", "割れ物注意"].map(opt => (
+                        <button key={opt} onClick={() => setPostForm(f => ({ ...f, shippingNote: opt }))} className="bp" style={{ background: postForm.shippingNote === opt ? "#d97706" : "#fff", border: `1px solid ${postForm.shippingNote === opt ? "#d97706" : "#e8dfd0"}`, borderRadius: 20, padding: "5px 11px", fontSize: 11, fontWeight: 600, color: postForm.shippingNote === opt ? "#fff" : "#5a4a3a", cursor: "pointer" }}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             <button onClick={async () => {
               if (!postForm.title.trim()) { showToast("⚠️ タイトルを入力してください"); return; }
@@ -1081,7 +1106,7 @@ export default function SwapApp() {
                 showToast("✅ 出品を更新しました");
               } else {
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
+                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
                 // Firestoreに保存
                 if (user) {
                   const docRef = await addDoc(collection(db, "users", user.uid, "items"), newItem);
@@ -1091,7 +1116,7 @@ export default function SwapApp() {
                 showToast(postType === "offer" ? "🎉 出品しました！" : "🙋 欲しいリストに投稿しました！");
               }
               setShowPostModal(false); setEditingItem(null);
-              setPostForm({ title: "", category: "カメラ", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false });
+              setPostForm({ title: "", category: "📷 カメラ・映像", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 14, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               {editingItem ? "更新する" : postType === "offer" ? "無料で出品する" : "欲しいリストに投稿"}
             </button>
@@ -1104,10 +1129,7 @@ export default function SwapApp() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowTradeModal(null)}>
           <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "85vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#d4c4a8", borderRadius: 2, margin: "0 auto 15px" }} />
-            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: 3 }}>{showTradeModal.fromWant ? "🙋 リクエストに応じる" : "⟳ 交換を申し込む"}</h2>
-            <div style={{ background: "#dcfce7", border: "1px solid #86efac", borderRadius: 9, padding: "7px 11px", marginBottom: 12, display: "flex", gap: 5 }}>
-              <span>✅</span><p style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>手数料 ¥0 · 完全無料</p>
-            </div>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: 12 }}>{showTradeModal.fromWant ? "🙋 リクエストに応じる" : "⟳ 交換を申し込む"}</h2>
             <div style={{ background: "#fff", borderRadius: 12, padding: 11, marginBottom: 11, display: "flex", gap: 10, alignItems: "center" }}>
               <div style={{ width: 48, height: 48, background: "#f7f4ef", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.image}</div>
               <div>
