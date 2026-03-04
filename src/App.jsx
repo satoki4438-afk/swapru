@@ -475,6 +475,7 @@ export default function SwapApp() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
+        html,body{max-width:430px;margin:0 auto;overflow-x:hidden}
         ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#d4a574;border-radius:2px}
         .ph{transition:transform .18s;cursor:pointer}.ph:active{transform:scale(.97)}
         .bp:active{transform:scale(.95)}
