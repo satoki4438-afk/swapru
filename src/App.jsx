@@ -734,7 +734,7 @@ export default function SwapApp() {
 
             {/* ── 出品管理タブ ── */}
             {mypageTab === "listings" && (
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, width: "100%" }}>
                 <button onClick={() => setShowPostModal(true)} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 13, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   ➕ 新しく出品する
                 </button>
@@ -783,7 +783,7 @@ export default function SwapApp() {
 
             {/* ── 取引履歴タブ ── */}
             {mypageTab === "history" && (
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, width: "100%" }}>
 
                 {/* 進行中 */}
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#c4813a", letterSpacing: 1, marginBottom: 9 }}>⏳ 進行中</p>
@@ -862,7 +862,7 @@ export default function SwapApp() {
 
             {/* ── 設定タブ ── */}
             {mypageTab === "settings" && (
-              <div style={{ padding: 14 }}>
+              <div style={{ padding: 14, width: "100%" }}>
                 {/* プロフィール */}
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#1a1208", marginBottom: 13 }}>👤 プロフィール</h3>
