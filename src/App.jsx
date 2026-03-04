@@ -29,7 +29,7 @@ const MOCK_THREADS = [
   {
     id: "c1", partner: "music_lover", partnerAvatar: "M", partnerItem: "Gibson レスポール エレキギター", partnerItemImage: "🎸",
     myItem: "キャノン望遠レンズ 70-200mm", myItemImage: "🔭",
-    status: "交渉中", unread: 2, lastMsg: "レンズの状態をもう少し詳しく教えてもらえますか？", lastTime: "14:32",
+    status: "交渉中", tradeStatus: "交渉中", unread: 2, lastMsg: "レンズの状態をもう少し詳しく教えてもらえますか？", lastTime: "14:32",
     messages: [
       { id: 1, from: "them", text: "はじめまして！レンズとギターの交換に興味があります。", time: "13:10", read: true },
       { id: 2, from: "me", text: "こちらこそ！ギターずっと探してたんです。レンズはかなり程度良いですよ。", time: "13:25", read: true },
@@ -41,7 +41,7 @@ const MOCK_THREADS = [
   {
     id: "c2", partner: "gamer_yuki", partnerAvatar: "Y", partnerItem: "Nintendo Switch + ソフト5本", partnerItemImage: "🎮",
     myItem: "ミニマルレザーウォレット", myItemImage: "💼",
-    status: "交換成立", unread: 0, lastMsg: "ありがとうございました！また機会があれば！", lastTime: "昨日",
+    status: "スワプる成立！", tradeStatus: "完了", unread: 0, lastMsg: "ありがとうございました！また機会があれば！", lastTime: "昨日",
     messages: [
       { id: 1, from: "them", text: "財布の交換希望です！Switchはほぼ新品で画面にキズなしです。", time: "昨日 10:00", read: true },
       { id: 2, from: "me", text: "いいですね！財布もほぼ新品です。交換しましょう！", time: "昨日 10:30", read: true },
@@ -393,6 +393,17 @@ export default function SwapApp() {
   // ── CHAT SCREEN (full screen) ──
   if (view === "chat" && openThread) {
     const thread = openThread;
+    const ts = thread.tradeStatus || "交渉中";
+    const TRADE_STEPS = ["申し込み", "交渉中", "スワプる！", "発送中", "受取確認", "評価", "完了"];
+    const stepIdx = TRADE_STEPS.indexOf(ts);
+
+    const updateTradeStatus = (newStatus, extraMsg) => {
+      const now = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+      const sysMsg = { id: Date.now(), from: "system", text: extraMsg, time: now, read: true };
+      setOpenThread(prev => ({ ...prev, tradeStatus: newStatus, status: newStatus, messages: [...prev.messages, sysMsg] }));
+      setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, tradeStatus: newStatus, status: newStatus } : t));
+    };
+
     return (
       <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#f0ede8", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         <style>{`
@@ -400,6 +411,7 @@ export default function SwapApp() {
           *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
           @keyframes up{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
           @keyframes fi{from{opacity:0}to{opacity:1}}
+          @keyframes spin{to{transform:rotate(360deg)}}
           input,textarea{outline:none}
         `}</style>
 
@@ -411,7 +423,27 @@ export default function SwapApp() {
             <p style={{ color: "#f0ede8", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
             <p style={{ color: "#8a7a6a", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{thread.partnerItemImage} {thread.partnerItem}</p>
           </div>
-          <span style={{ background: thread.status === "交換成立" ? "rgba(22,163,74,.25)" : "rgba(251,191,36,.2)", borderRadius: 20, padding: "3px 9px", fontSize: 9, fontWeight: 700, color: thread.status === "交換成立" ? "#4ade80" : "#fbbf24", flexShrink: 0 }}>{thread.status}</span>
+        </div>
+
+        {/* ステータスレール */}
+        <div style={{ background: "#fff", borderBottom: "1px solid #e8dfd0", padding: "10px 12px", flexShrink: 0, overflowX: "auto" }}>
+          <div style={{ display: "flex", alignItems: "center", minWidth: "max-content", gap: 0 }}>
+            {TRADE_STEPS.map((step, i) => {
+              const done = i < stepIdx;
+              const current = i === stepIdx;
+              return (
+                <div key={step} style={{ display: "flex", alignItems: "center" }}>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? "#d4a574" : current ? "#1a1208" : "#e8dfd0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: done || current ? "#fff" : "#b4a494", fontWeight: 700, flexShrink: 0 }}>
+                      {done ? "✓" : i + 1}
+                    </div>
+                    <p style={{ fontSize: 8, fontWeight: current ? 700 : 400, color: current ? "#1a1208" : done ? "#d4a574" : "#b4a494", whiteSpace: "nowrap" }}>{step}</p>
+                  </div>
+                  {i < TRADE_STEPS.length - 1 && <div style={{ width: 18, height: 2, background: done ? "#d4a574" : "#e8dfd0", marginBottom: 11, flexShrink: 0 }} />}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Trade context bar */}
@@ -433,17 +465,50 @@ export default function SwapApp() {
           </div>
         </div>
 
-        {/* 成立アクションバー */}
-        {thread.status === "交渉中" && (
+        {/* アクションバー（ステータス別） */}
+        {ts === "交渉中" && (
           <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            <p style={{ fontSize: 11, color: "#92400e", flex: 1 }}>✋ 条件が合ったら「交換成立」を押しましょう</p>
-            <button onClick={() => { setOpenThread(prev => ({ ...prev, status: "交換成立" })); setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, status: "交換成立" } : t)); showToast("🎉 交換が成立しました！"); }} className="bp" style={{ background: "#d4a574", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>✅ 交換成立</button>
+            <p style={{ fontSize: 11, color: "#92400e", flex: 1 }}>💬 条件が合ったら「スワプる！」を押しましょう</p>
+            <button onClick={() => updateTradeStatus("スワプる！", "🔁 スワプる申請を送りました！相手の承認を待ちましょう")} className="bp" style={{ background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>🔁 スワプる！</button>
           </div>
         )}
-        {thread.status === "交換成立" && (
+        {ts === "スワプる！" && (
+          <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#92400e", marginBottom: 7, fontWeight: 600 }}>🔁 スワプる申請が届いています！</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => updateTradeStatus("発送中", "🎉 スワプる成立！お互い発送の準備をしましょう")} className="bp" style={{ flex: 1, background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "8px 0", color: "#1a1208", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ スワプる成立！</button>
+              <button onClick={() => updateTradeStatus("交渉中", "🙏 申し訳ありませんが、今回はご縁がありませんでした。またの機会によろしくお願いします。")} className="bp" style={{ flex: 1, background: "#f0ede8", border: "1px solid #e8dfd0", borderRadius: 9, padding: "8px 0", color: "#8a7a6a", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>🙏 ごめんなさい</button>
+            </div>
+          </div>
+        )}
+        {ts === "発送中" && (
+          <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#1e40af", flex: 1 }}>📦 発送が完了したら押してください</p>
+            <button onClick={() => updateTradeStatus("受取確認", "📦 発送しました！相手の受取確認を待ちましょう")} className="bp" style={{ background: "#3b82f6", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>📦 発送しました</button>
+          </div>
+        )}
+        {ts === "受取確認" && (
+          <div style={{ background: "#f0fdf4", borderBottom: "1px solid #bbf7d0", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#15803d", flex: 1 }}>📬 商品は届きましたか？</p>
+            <button onClick={() => updateTradeStatus("評価", "✅ 受け取り完了！お互いの評価をお願いします🌟")} className="bp" style={{ background: "#16a34a", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>✅ 受け取りました</button>
+          </div>
+        )}
+        {ts === "評価" && (
+          <div style={{ background: "#fdf4ff", borderBottom: "1px solid #e9d5ff", padding: "9px 14px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#7e22ce", marginBottom: 7, fontWeight: 600 }}>🌟 {thread.partner} さんを評価してください</p>
+            <div style={{ display: "flex", gap: 6, marginBottom: 7 }}>
+              {[1,2,3,4,5].map(s => (
+                <button key={s} onClick={() => setOpenThread(prev => ({ ...prev, reviewScore: s }))} style={{ fontSize: 24, background: "none", border: "none", cursor: "pointer", opacity: (thread.reviewScore || 0) >= s ? 1 : 0.3 }}>⭐</button>
+              ))}
+            </div>
+            <textarea placeholder="コメントを入力（任意）" value={thread.reviewComment || ""} onChange={e => setOpenThread(prev => ({ ...prev, reviewComment: e.target.value }))} style={{ width: "100%", background: "#fff", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 11px", fontSize: 12, color: "#1a1208", resize: "none", height: 56, marginBottom: 7 }} />
+            <button onClick={() => { if (!thread.reviewScore) { showToast("⭐ 星をつけてください"); return; } updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
+          </div>
+        )}
+        {ts === "完了" && (
           <div style={{ background: "#dcfce7", borderBottom: "1px solid #86efac", padding: "9px 14px", display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-            <span style={{ fontSize: 16 }}>🎉</span>
-            <p style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>交換成立！配送・受け渡し方法を確認しましょう</p>
+            <span style={{ fontSize: 18 }}>🎉</span>
+            <p style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>スワプる成立！取引が完了しました</p>
           </div>
         )}
 
@@ -451,13 +516,23 @@ export default function SwapApp() {
         <div style={{ flex: 1, overflowY: "auto", padding: "14px 14px 8px" }}>
           {thread.messages.map((msg, i) => {
             const isMe = msg.from === "me";
+            const isSystem = msg.from === "system";
+            if (isSystem) return (
+              <div key={msg.id} style={{ textAlign: "center", margin: "10px 0", animation: `up .25s ease both` }}>
+                <span style={{ background: "#f0ede8", border: "1px solid #e8dfd0", borderRadius: 20, padding: "5px 14px", fontSize: 10, color: "#8a7a6a" }}>{msg.text}</span>
+              </div>
+            );
             return (
               <div key={msg.id} style={{ display: "flex", justifyContent: isMe ? "flex-end" : "flex-start", marginBottom: 10, animation: `up .25s ease ${i * 30}ms both` }}>
                 {!isMe && <div style={{ width: 30, height: 30, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 11, marginRight: 8, flexShrink: 0, alignSelf: "flex-end" }}>{thread.partnerAvatar}</div>}
                 <div style={{ maxWidth: "72%" }}>
-                  <div style={{ background: isMe ? "linear-gradient(135deg,#d4a574,#c4813a)" : "#fff", borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 13px", boxShadow: "0 2px 8px rgba(0,0,0,.08)" }}>
-                    <p style={{ fontSize: 13, color: isMe ? "#1a1208" : "#1a1208", lineHeight: 1.5 }}>{msg.text}</p>
-                  </div>
+                  {msg.imageUrl ? (
+                    <img src={msg.imageUrl} style={{ width: 180, height: 180, objectFit: "cover", borderRadius: 12, display: "block" }} />
+                  ) : (
+                    <div style={{ background: isMe ? "linear-gradient(135deg,#d4a574,#c4813a)" : "#fff", borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 13px", boxShadow: "0 2px 8px rgba(0,0,0,.08)" }}>
+                      <p style={{ fontSize: 13, color: "#1a1208", lineHeight: 1.5 }}>{msg.text}</p>
+                    </div>
+                  )}
                   <p style={{ fontSize: 9, color: "#b4a494", marginTop: 3, textAlign: isMe ? "right" : "left" }}>
                     {msg.time}{isMe && <span style={{ marginLeft: 4 }}>{msg.read ? "✓✓" : "✓"}</span>}
                   </p>
@@ -475,6 +550,21 @@ export default function SwapApp() {
 
         {/* Input */}
         <div style={{ background: "#fff", padding: "10px 12px", borderTop: "1px solid #e8dfd0", display: "flex", gap: 8, alignItems: "flex-end", flexShrink: 0, paddingBottom: "max(10px, env(safe-area-inset-bottom))" }}>
+          {/* 写真送信ボタン */}
+          <input type="file" accept="image/*" ref={el => window._chatImgInput = el} style={{ display: "none" }} onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (!file || !user) return;
+            try {
+              const storageRef = ref(storage, `chat/${user.uid}/${Date.now()}_${file.name}`);
+              await uploadBytes(storageRef, file);
+              const url = await getDownloadURL(storageRef);
+              const now = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+              const newMsg = { id: Date.now(), from: "me", imageUrl: url, time: now, read: false };
+              setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
+              setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, lastMsg: "📷 写真", lastTime: now } : t));
+            } catch(e) { showToast("❌ 送信失敗"); }
+          }} />
+          <button onClick={() => window._chatImgInput?.click()} className="bp" style={{ width: 40, height: 40, background: "#f0ede8", border: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, fontSize: 18 }}>📷</button>
           <div style={{ flex: 1, background: "#f0ede8", borderRadius: 22, padding: "10px 14px", display: "flex", alignItems: "center" }}>
             <textarea value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="メッセージを入力..." rows={1} style={{ flex: 1, background: "none", border: "none", fontSize: 13, color: "#1a1208", resize: "none", lineHeight: 1.5, maxHeight: 100 }} />
           </div>
@@ -1021,7 +1111,7 @@ export default function SwapApp() {
                   setPostForm(f => ({ ...f, uploading: true }));
                   try {
                     const urls = [];
-                    for (const file of files.slice(0, 6)) {
+                    for (const file of files.slice(0, 3)) {
                       const storageRef = ref(storage, `items/${user.uid}/${Date.now()}_${file.name}`);
                       await uploadBytes(storageRef, file);
                       const url = await getDownloadURL(storageRef);
@@ -1030,7 +1120,7 @@ export default function SwapApp() {
                     setPostForm(f => ({ ...f, imageUrls: [...(f.imageUrls || []), ...urls], uploading: false }));
                   } catch(e) { setPostForm(f => ({ ...f, uploading: false })); showToast("❌ アップロード失敗"); }
                 }} />
-                <div onClick={() => window._imgInput?.click()} style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#fafafa" }}>
+                <div onClick={() => { if ((postForm.imageUrls || []).length >= 3) { showToast("⚠️ 写真は最大3枚です"); return; } window._imgInput?.click(); }} style={{ border: "2px dashed #e8dfd0", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#fafafa" }}>
                   {postForm.uploading ? (
                     <div style={{ textAlign: "center" }}>
                       <div style={{ width: 28, height: 28, border: "3px solid #d4a574", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 6px", animation: "spin .8s linear infinite" }} />
@@ -1040,7 +1130,7 @@ export default function SwapApp() {
                     <>
                       <span style={{ fontSize: 28, marginBottom: 4 }}>📷</span>
                       <p style={{ fontSize: 12, color: "#8a7a6a", fontWeight: 600 }}>写真を追加</p>
-                      <p style={{ fontSize: 10, color: "#b4a494" }}>タップして選択（最大6枚）</p>
+                      <p style={{ fontSize: 10, color: "#b4a494" }}>{(postForm.imageUrls || []).length}/3枚</p>
                     </>
                   )}
                 </div>
