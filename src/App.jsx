@@ -67,6 +67,19 @@ const AFFILIATE_ADS = [
 ];
 
 const CATEGORIES = ["すべて", "📷 カメラ・映像", "🎵 音楽・楽器", "🎮 ゲーム", "💻 スマホ・PC・家電", "👕 ファッション", "⛺ アウトドア・スポーツ", "📚 本・CD・メディア", "🧸 ホビー・コレクション", "🍳 キッチン・日用品", "🎁 お中元・お歳暮", "📦 その他"];
+const SUB_CATEGORIES = {
+  "📷 カメラ・映像": ["フィルムカメラ", "デジカメ", "ミラーレス", "一眼レフ", "レンズ", "三脚・アクセサリー", "ドローン", "その他"],
+  "🎵 音楽・楽器": ["ギター（エレキ）", "ギター（アコ）", "ベース", "キーボード・シンセ", "ドラム・打楽器", "管楽器", "DJ機材", "その他"],
+  "🎮 ゲーム": ["本体・周辺機器", "ソフト", "レトロゲーム", "その他"],
+  "💻 スマホ・PC・家電": ["スマホ", "タブレット", "ノートPC", "イヤホン・ヘッドホン", "スピーカー", "周辺機器", "その他"],
+  "👕 ファッション": ["メンズ", "レディース", "スニーカー", "バッグ", "時計・アクセ", "その他"],
+  "⛺ アウトドア・スポーツ": ["キャンプ用品", "登山", "釣り", "自転車", "サーフィン・ウィンタースポーツ", "その他"],
+  "📚 本・CD・メディア": ["漫画・小説", "専門書", "雑誌", "CD・レコード", "DVD・Blu-ray", "その他"],
+  "🧸 ホビー・コレクション": ["プラモデル", "フィギュア・グッズ", "トレカ", "アート・工芸", "手芸・ソーイング", "その他"],
+  "🍳 キッチン・日用品": ["調理器具", "食器", "収納", "掃除用品", "その他"],
+  "🎁 お中元・お歳暮": ["食品・飲料", "お酒", "スイーツ", "日用品ギフト", "その他"],
+  "📦 その他": ["その他"],
+};
 const CONDITIONS = ["新品・未使用", "ほぼ新品", "良好", "目立つ傷あり", "傷・汚れあり"];
 const PREFECTURES = ["東京都", "神奈川県", "大阪府", "愛知県", "福岡県", "北海道", "宮城県", "埼玉県", "千葉県", "京都府", "兵庫県", "広島県", "長野県"];
 
@@ -207,7 +220,7 @@ export default function SwapApp() {
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", locationPrivate: false, notify_message: true, notify_match: true, notify_news: false, avatarUrl: null, avatarEmoji: null, preferredCategories: [] });
 
   // Post form
-  const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
+  const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", subCategory: "その他", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
 
   const [toast, setToast] = useState(null);
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
@@ -610,6 +623,7 @@ export default function SwapApp() {
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#1a1208", lineHeight: 1.3, marginBottom: 7 }}>{selectedItem.title}</h2>
                 <div style={{ display: "flex", gap: 5, marginBottom: 11, flexWrap: "wrap" }}>
                   <span style={{ background: "#f0ede8", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#5a4a3a" }}>{selectedItem.category}</span>
+                  {selectedItem.subCategory && <span style={{ background: "#e8dfd0", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#5a4a3a" }}>{selectedItem.subCategory}</span>}
                   <span style={{ background: "#e8f5e9", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#2e7d32" }}>{selectedItem.condition}</span>
                 </div>
                 {selectedItem.category === "🎁 お中元・お歳暮" && (selectedItem.expiryDate || selectedItem.shippingNote) && (
@@ -1062,7 +1076,7 @@ export default function SwapApp() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>カテゴリー</p>
-                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
+                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value, subCategory: SUB_CATEGORIES[e.target.value]?.[0] || "その他" }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
                     {CATEGORIES.filter(c => c !== "すべて").map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -1072,6 +1086,12 @@ export default function SwapApp() {
                     {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
+              </div>
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>中分類</p>
+                <select value={postForm.subCategory} onChange={e => setPostForm(f => ({ ...f, subCategory: e.target.value }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
+                  {(SUB_CATEGORIES[postForm.category] || ["その他"]).map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
               </div>
 
               {/* お中元・お歳暮専用フィールド */}
@@ -1106,7 +1126,7 @@ export default function SwapApp() {
                 showToast("✅ 出品を更新しました");
               } else {
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
+                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, subCategory: postForm.subCategory || "その他", condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
                 // Firestoreに保存
                 if (user) {
                   const docRef = await addDoc(collection(db, "users", user.uid, "items"), newItem);
@@ -1116,7 +1136,7 @@ export default function SwapApp() {
                 showToast(postType === "offer" ? "🎉 出品しました！" : "🙋 欲しいリストに投稿しました！");
               }
               setShowPostModal(false); setEditingItem(null);
-              setPostForm({ title: "", category: "📷 カメラ・映像", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
+              setPostForm({ title: "", category: "📷 カメラ・映像", subCategory: "その他", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 14, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               {editingItem ? "更新する" : postType === "offer" ? "無料で出品する" : "欲しいリストに投稿"}
             </button>
