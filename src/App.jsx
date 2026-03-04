@@ -700,7 +700,7 @@ export default function SwapApp() {
 
         {/* ════ MYPAGE ════ */}
         {view === "mypage" && (
-          <div className="fi">
+          <div className="fi" style={{ width: "100%" }}>
             {/* Profile header */}
             <div style={{ background: "linear-gradient(135deg,#1a1208,#3d2b15)", padding: "20px 16px", color: "#f0ede8" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 16 }}>
