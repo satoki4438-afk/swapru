@@ -220,7 +220,7 @@ export default function SwapApp() {
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", locationPrivate: false, notify_message: true, notify_match: true, notify_news: false, avatarUrl: null, avatarEmoji: null, preferredCategories: [] });
 
   // Post form
-  const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", subCategory: "その他", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
+  const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", subCategory: "", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
 
   const [toast, setToast] = useState(null);
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
@@ -1076,7 +1076,7 @@ export default function SwapApp() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>カテゴリー</p>
-                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value, subCategory: SUB_CATEGORIES[e.target.value]?.[0] || "その他" }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
+                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value, subCategory: "" }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
                     {CATEGORIES.filter(c => c !== "すべて").map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
@@ -1088,8 +1088,9 @@ export default function SwapApp() {
                 </div>
               </div>
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>中分類</p>
-                <select value={postForm.subCategory} onChange={e => setPostForm(f => ({ ...f, subCategory: e.target.value }))} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", cursor: "pointer" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>中分類 <span style={{ color: "#ef4444" }}>*</span></p>
+                <select value={postForm.subCategory} onChange={e => setPostForm(f => ({ ...f, subCategory: e.target.value }))} style={{ width: "100%", background: "#f7f4ef", border: postForm.subCategory ? "none" : "1px solid #fca5a5", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: postForm.subCategory ? "#1a1208" : "#8a7a6a", cursor: "pointer" }}>
+                  <option value="">-- 選択してください --</option>
                   {(SUB_CATEGORIES[postForm.category] || ["その他"]).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
@@ -1115,6 +1116,7 @@ export default function SwapApp() {
             </div>
             <button onClick={async () => {
               if (!postForm.title.trim()) { showToast("⚠️ タイトルを入力してください"); return; }
+              if (!postForm.subCategory) { showToast("⚠️ 中分類を選択してください"); return; }
               if (editingItem) {
                 // Firestore更新
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
@@ -1136,7 +1138,7 @@ export default function SwapApp() {
                 showToast(postType === "offer" ? "🎉 出品しました！" : "🙋 欲しいリストに投稿しました！");
               }
               setShowPostModal(false); setEditingItem(null);
-              setPostForm({ title: "", category: "📷 カメラ・映像", subCategory: "その他", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
+              setPostForm({ title: "", category: "📷 カメラ・映像", subCategory: "", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 14, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               {editingItem ? "更新する" : postType === "offer" ? "無料で出品する" : "欲しいリストに投稿"}
             </button>
