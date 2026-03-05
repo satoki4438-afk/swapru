@@ -276,13 +276,15 @@ export default function SwapApp() {
       const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
       setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "交渉中", negotiationDeadline: deadline.toISOString() } : a));
       const app = applications.find(a => a.id === appId);
-      // Firestoreにチャット作成
+      // 画像URLの場合は絵文字に置き換え
+      const safeItemImage = app?.itemImage?.startsWith("http") ? "📦" : (app?.itemImage || "📦");
+      const safeMyItemImage = app?.myItemImage?.startsWith("http") ? "📦" : (app?.myItemImage || "📦");
       try {
         const chatData = {
           applicantUid: app?.applicantUid, applicantName: app?.applicant, applicantAvatar: app?.applicantAvatar,
-          applicantItemTitle: app?.myItemTitle, applicantItemImage: app?.myItemImage,
+          applicantItemTitle: app?.myItemTitle, applicantItemImage: safeMyItemImage,
           ownerUid: user.uid, ownerName: user.name, ownerAvatar: user.avatar,
-          ownerItemTitle: app?.itemTitle, ownerItemImage: app?.itemImage,
+          ownerItemTitle: app?.itemTitle, ownerItemImage: safeItemImage,
           tradeStatus: "交渉中", lastMsg: "交渉が開始されました", updatedAt: serverTimestamp(),
           messages: [], unreadCount: { [app?.applicantUid]: 1 }
         };
@@ -291,8 +293,8 @@ export default function SwapApp() {
         const newThread = {
           id: chatRef.id, firestoreId: chatRef.id,
           partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
-          partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
-          myItem: app?.itemTitle, myItemImage: app?.itemImage,
+          partnerItem: app?.myItemTitle, partnerItemImage: safeMyItemImage,
+          myItem: app?.itemTitle, myItemImage: safeItemImage,
           status: "交渉中", tradeStatus: "交渉中", unread: 0, lastMsg: "交渉が開始されました", lastTime: "今",
           messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
         };
@@ -301,8 +303,8 @@ export default function SwapApp() {
         console.error(e);
         const newThread = {
           id: `app_${appId}`, partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
-          partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
-          myItem: app?.itemTitle, myItemImage: app?.itemImage,
+          partnerItem: app?.myItemTitle, partnerItemImage: safeMyItemImage,
+          myItem: app?.itemTitle, myItemImage: safeItemImage,
           status: "交渉中", tradeStatus: "交渉中", unread: 1, lastMsg: app?.message || "交渉を開始しました", lastTime: "今",
           messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
         };
@@ -1118,11 +1120,11 @@ export default function SwapApp() {
               {totalUnread > 0 && <span style={{ background: "#ef4444", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fff" }}>{totalUnread}件未読</span>}
             </div>
 
-            {/* 申し込み受信ボックス */}
-            {applications.filter(a => a.status === "申し込み中" || a.status === "保留中").length > 0 && (
+            {/* 申し込み受信ボックス（自分が出品者の場合のみ） */}
+            {applications.filter(a => (a.status === "申し込み中" || a.status === "保留中") && a.applicantUid !== user?.uid).length > 0 && (
               <div style={{ margin: "0 14px 12px" }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", letterSpacing: 1, marginBottom: 7 }}>📨 申し込み</p>
-                {applications.filter(a => a.status === "申し込み中" || a.status === "保留中").map(app => (
+                {applications.filter(a => (a.status === "申し込み中" || a.status === "保留中") && a.applicantUid !== user?.uid).map(app => (
                   <div key={app.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
                       <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{app.applicant?.charAt(0)}</div>
