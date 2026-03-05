@@ -225,6 +225,7 @@ export default function SwapApp() {
   const [adminTab, setAdminTab] = useState("dashboard");
   const [applications, setApplications] = useState([]); // 申し込み一覧
   const [cancelCount, setCancelCount] = useState(0); // キャンセル回数
+  const [blockedUsers, setBlockedUsers] = useState([]); // ブロックリスト
   const ADMIN_EMAIL = "satoki4438@gmail.com";
   const isAdmin = user?.email === ADMIN_EMAIL;
 
@@ -326,6 +327,16 @@ export default function SwapApp() {
     else showToast("キャンセルしました");
   };
 
+  const blockUser = async (userName, uid) => {
+    if (blockedUsers.includes(userName)) { showToast("すでにブロック済みです"); return; }
+    setBlockedUsers(prev => [...prev, userName]);
+    try {
+      await setDoc(doc(db, "users", user.uid, "blocks", uid || userName), { userName, blockedAt: new Date().toISOString() });
+    } catch(e) {}
+    setSelectedOwner(null);
+    showToast(`🚫 ${userName} をブロックしました`);
+  };
+
   const submitReport = async () => {
     if (!reportReason) { showToast("⚠️ 通報理由を選択してください"); return; }
     const report = { id: Date.now(), itemId: showReportModal.id, itemTitle: showReportModal.title, itemOwner: showReportModal.owner, reason: reportReason, reportedBy: user?.email || "匿名", createdAt: new Date().toISOString(), status: "未対応" };
@@ -389,7 +400,7 @@ export default function SwapApp() {
   const matchedItems = ALL_ITEMS.filter(item => getMatchReasons(item, myItems).length > 0);
   const totalUnread = threads.reduce((s, t) => s + t.unread, 0);
 
-  const filteredItems = ALL_ITEMS.filter(item => {
+  const filteredItems = ALL_ITEMS.filter(item => !blockedUsers.includes(item.owner)).filter(item => {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
     const ms = !searchQuery || item.title.includes(searchQuery) || item.wantItems?.some(w => w.includes(searchQuery));
     return mc && ms;
@@ -493,10 +504,18 @@ export default function SwapApp() {
     }, 1200);
   };
 
-  const openChat = (thread) => {
+  const openChat = async (thread) => {
     setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, unread: 0 } : t));
     setOpenThread({ ...thread, unread: 0 });
     setView("chat");
+    // Firestore既読更新
+    if (thread.firestoreId && user) {
+      try {
+        await updateDoc(doc(db, "chats", thread.firestoreId), {
+          [`unreadCount.${user.uid}`]: 0
+        });
+      } catch(e) {}
+    }
   };
 
   // Firestore: 出品データ読み込み
@@ -675,11 +694,17 @@ export default function SwapApp() {
     const TRADE_STEPS = ["申し込み", "交渉中", "スワプる！", "発送中", "受取確認", "評価", "完了"];
     const stepIdx = TRADE_STEPS.indexOf(ts);
 
-    const updateTradeStatus = (newStatus, extraMsg) => {
+    const updateTradeStatus = async (newStatus, extraMsg) => {
       const now = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
       const sysMsg = { id: Date.now(), from: "system", text: extraMsg, time: now, read: true };
       setOpenThread(prev => ({ ...prev, tradeStatus: newStatus, status: newStatus, messages: [...prev.messages, sysMsg] }));
       setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, tradeStatus: newStatus, status: newStatus } : t));
+      // Firestore同期
+      if (thread.firestoreId) {
+        try {
+          await updateDoc(doc(db, "chats", thread.firestoreId), { tradeStatus: newStatus, lastMsg: extraMsg, updatedAt: serverTimestamp() });
+        } catch(e) {}
+      }
     };
 
     return (
@@ -701,6 +726,7 @@ export default function SwapApp() {
             <p style={{ color: "#f0ede8", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
             <p style={{ color: "#8a7a6a", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{thread.partnerItemImage} {thread.partnerItem}</p>
           </div>
+          <button onClick={() => { if (window.confirm(`${thread.partner} をブロックしますか？`)) blockUser(thread.partner, ""); }} style={{ background: "none", border: "none", color: "#6a5a4a", fontSize: 11, cursor: "pointer", padding: "4px 6px" }}>🚫</button>
         </div>
 
         {/* ステータスレール */}
@@ -760,9 +786,20 @@ export default function SwapApp() {
           </div>
         )}
         {ts === "発送中" && (
-          <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            <p style={{ fontSize: 11, color: "#1e40af", flex: 1 }}>📦 発送が完了したら押してください</p>
-            <button onClick={() => updateTradeStatus("受取確認", "📦 発送しました！相手の受取確認を待ちましょう")} className="bp" style={{ background: "#3b82f6", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>📦 発送しました</button>
+          <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "9px 14px", flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
+              <p style={{ fontSize: 11, color: "#1e40af", flex: 1 }}>📦 発送が完了したら押してください</p>
+              <button onClick={() => updateTradeStatus("受取確認", "📦 発送しました！相手の受取確認を待ちましょう")} className="bp" style={{ background: "#3b82f6", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>📦 発送しました</button>
+            </div>
+            <div style={{ background: "rgba(255,255,255,.7)", borderRadius: 9, padding: 9 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", marginBottom: 5 }}>📮 発送方法ガイド</p>
+              {[["📦 ヤマト宅急便","コンビニ・営業所から。追跡あり。翌日〜2日"],["📮 ゆうパック","郵便局・コンビニから。追跡・補償あり"],["✉️ ゆうメール","1kg以内 300円〜。小型向き"],["📬 クリックポスト","全国一律185円。ポスト投函。1kgまで"]].map(([name, desc]) => (
+                <div key={name} style={{ display: "flex", gap: 6, marginBottom: 3 }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", whiteSpace: "nowrap" }}>{name}</p>
+                  <p style={{ fontSize: 10, color: "#5a4a3a" }}>{desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         {ts === "受取確認" && (
@@ -784,9 +821,16 @@ export default function SwapApp() {
           </div>
         )}
         {ts === "完了" && (
-          <div style={{ background: "#dcfce7", borderBottom: "1px solid #86efac", padding: "9px 14px", display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
-            <span style={{ fontSize: 18 }}>🎉</span>
-            <p style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>スワプる成立！取引が完了しました</p>
+          <div style={{ background: "#dcfce7", borderBottom: "1px solid #86efac", padding: "9px 14px", flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 7 }}>
+              <span style={{ fontSize: 18 }}>🎉</span>
+              <p style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>スワプる成立！取引が完了しました</p>
+            </div>
+            <button onClick={async () => {
+              const text = `🎉 スワプる成立！\n${thread.myItem} ⟳ ${thread.partnerItem}\n@${thread.partner} さんとの交換が完了しました！\n#Swapru #物々交換 #スワプる`;
+              if (navigator.share) { try { await navigator.share({ text, url: "https://swapru.vercel.app/" }); } catch(e) {} }
+              else { await navigator.clipboard.writeText(text); showToast("📋 コピーしました！SNSに貼り付けてシェアしよう"); }
+            }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#16a34a,#15803d)", border: "none", borderRadius: 9, padding: "8px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>📤 成立をシェアする 🎊</button>
           </div>
         )}
 
@@ -1636,6 +1680,9 @@ export default function SwapApp() {
 
             {/* 出品一覧 */}
             <div style={{ padding: "0 14px 20px" }}>
+              {selectedOwner.name !== user?.name && (
+                <button onClick={() => { if (window.confirm(`${selectedOwner.name} をブロックしますか？この人の出品が表示されなくなります。`)) blockUser(selectedOwner.name, selectedOwner.uid); }} className="bp" style={{ width: "100%", background: "#fef2f2", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#ef4444", cursor: "pointer", marginBottom: 12 }}>🚫 このユーザーをブロック</button>
+              )}
               <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", marginBottom: 10 }}>📦 出品中のアイテム</p>
               {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").length === 0 ? (
                 <p style={{ fontSize: 12, color: "#8a7a6a", textAlign: "center", padding: 20 }}>出品中のアイテムはありません</p>
