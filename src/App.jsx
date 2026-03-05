@@ -206,7 +206,7 @@ export default function SwapApp() {
   const [allItems, setAllItems] = useState(SEED_ITEMS); // 全ユーザーの出品
   const [myItems, setMyItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
-  const [threads, setThreads] = useState(MOCK_THREADS);
+  const [threads, setThreads] = useState([]);
   const [openThread, setOpenThread] = useState(null);
   const [chatInput, setChatInput] = useState("");
   const chatEndRef = useRef(null);
