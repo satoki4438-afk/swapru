@@ -140,7 +140,7 @@ function ItemCard({ item, liked, onLike, onClick, delay = 0 }) {
   return (
     <div className="ph" onClick={onClick} style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animation: `up .34s ease ${delay}ms both` }}>
       <div style={{ background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", height: 100, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, position: "relative", overflow: "hidden" }}>
-        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}
+        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
         <button onClick={e => onLike(item.id, e)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(255,255,255,.9)", border: "none", borderRadius: "50%", width: 26, height: 26, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {liked ? "❤️" : "🤍"}
         </button>
@@ -197,11 +197,11 @@ function WantCard({ item, onRespond, delay = 0 }) {
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 
 // 画像URLを安全に表示するヘルパー
-const imgSafe = (src, size = 36) => {
+function imgSafe(src, size = 36) {
   if (!src) return <span style={{ fontSize: size * 0.7 }}>📦</span>;
-  if (src.startsWith("http")) return <img src={src} style={{ width: size, height: size, objectFit: "cover", borderRadius: 6, display: "block" }} />;
+  if (typeof src === "string" && src.startsWith("http")) return <img src={src} style={{ width: size, height: size, objectFit: "cover", borderRadius: 6, display: "block" }} />;
   return <span style={{ fontSize: size * 0.7 }}>{src}</span>;
-};
+}
 
 export default function SwapApp() {
   // Auth
@@ -1224,7 +1224,7 @@ export default function SwapApp() {
                     {reasons.map((r, ri) => <span key={ri} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#3d2b15" }}>{r.myImage?.startsWith?.("http") ? "📦" : r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#c4813a" }}>「{r.want}」</span></span>)}
                   </div>
                   <div style={{ padding: 12, display: "flex", gap: 10, cursor: "pointer" }} onClick={() => openDetail(item)}>
-                    <div style={{ width: 62, height: 62, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
+                    <div style={{ width: 62, height: 62, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 4 }}>{item.title}</p>
                       <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{item.wantItems.map(w => <span key={w} style={{ background: reasons.some(r => r.want === w) ? "#fef3c7" : "#f7f4ef", border: `1px solid ${reasons.some(r => r.want === w) ? "#fcd34d" : "#e8dfd0"}`, borderRadius: 20, padding: "2px 7px", fontSize: 10, fontWeight: 600, color: reasons.some(r => r.want === w) ? "#d97706" : "#3d2b15" }}>{w}</span>)}</div>
@@ -1291,7 +1291,7 @@ export default function SwapApp() {
                 ) : myItems.map(item => (
                   <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
-                      <div style={{ width: 54, height: 54, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
+                      <div style={{ width: 54, height: 54, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 3 }}>{item.title}</p>
                         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 4 }}>
@@ -1773,7 +1773,7 @@ export default function SwapApp() {
                   {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").map(item => (
                     <div key={item.id} onClick={() => { setSelectedOwner(null); openDetail(item); }} className="ph" style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", cursor: "pointer" }}>
                       <div style={{ height: 90, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
-                        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}
+                        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
                       </div>
                       <div style={{ padding: "8px 9px" }}>
                         <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", lineHeight: 1.3, marginBottom: 3 }}>{item.title}</p>
@@ -1859,7 +1859,7 @@ export default function SwapApp() {
               </div>
             ) : myItems.map(item => (
               <div key={item.id} onClick={() => setSelectedMyItem(item)} className="ph" style={{ background: "#fff", borderRadius: 12, padding: 11, marginBottom: 7, display: "flex", gap: 10, alignItems: "center", border: `2px solid ${selectedMyItem?.id === item.id ? "#d4a574" : "transparent"}` }}>
-                <div style={{ width: 44, height: 44, background: "#f7f4ef", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
+                <div style={{ width: 44, height: 44, background: "#f7f4ef", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 600, fontSize: 12, color: "#1a1208" }}>{item.title}</p>
                   <p style={{ fontSize: 10, color: "#8a7a6a" }}>{item.condition}</p>
