@@ -4,17 +4,17 @@ import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-// ─── MOCK DATA ───────────────────────────────────────────────────────────────
+// ─── SEED DATA（初回のみFirestoreに投入） ────────────────────────────────────
 
-const ALL_ITEMS = [
-  { id: 1, title: "ヴィンテージカメラ Canon AE-1", category: "カメラ", condition: "良好", wantItems: ["レンズ", "三脚", "フィルム"], image: "📷", owner: "taka_photo", ownerAvatar: "T", location: "東京都渋谷区", views: 234, likes: 18 },
-  { id: 2, title: "Gibson レスポール エレキギター", category: "楽器", condition: "目立つ傷あり", wantItems: ["アコースティックギター", "エフェクター", "カメラ"], image: "🎸", owner: "music_lover", ownerAvatar: "M", location: "大阪府梅田", views: 512, likes: 42 },
-  { id: 3, title: "Nintendo Switch + ソフト5本", category: "ゲーム", condition: "ほぼ新品", wantItems: ["PS5", "Xbox", "ゲームソフト"], image: "🎮", owner: "gamer_yuki", ownerAvatar: "Y", location: "神奈川県横浜市", views: 891, likes: 76 },
-  { id: 4, title: "登山用テント 2〜3人用", category: "アウトドア", condition: "良好", wantItems: ["登山靴", "バックパック", "望遠レンズ"], image: "⛺", owner: "outdoor_ken", ownerAvatar: "K", location: "長野県松本市", views: 145, likes: 11 },
-  { id: 5, title: "Nespresso コーヒーメーカー", category: "家電", condition: "ほぼ新品", wantItems: ["空気清浄機", "電気ケトル", "財布"], image: "☕", owner: "cafe_home", ownerAvatar: "C", location: "福岡県福岡市", views: 328, likes: 27 },
-  { id: 6, title: "折りたたみ自転車 20インチ", category: "自転車", condition: "良好", wantItems: ["電動キックボード", "スケートボード", "カメラ"], image: "🚲", owner: "cycling_ryo", ownerAvatar: "R", location: "愛知県名古屋市", views: 203, likes: 15 },
-  { id: 7, title: "プロ一眼レフ Nikon D850", category: "カメラ", condition: "良好", wantItems: ["ミラーレスカメラ", "ドローン", "ギター"], image: "📸", owner: "pro_shooter", ownerAvatar: "P", location: "東京都新宿区", views: 672, likes: 53 },
-  { id: 8, title: "ハンドメイド革財布", category: "ファッション", condition: "新品同様", wantItems: ["バッグ", "ベルト", "腕時計"], image: "👜", owner: "craft_momo", ownerAvatar: "M", location: "京都府京都市", views: 189, likes: 22 },
+const SEED_ITEMS = [
+  { id: "seed1", title: "ヴィンテージカメラ Canon AE-1", category: "📷 カメラ・映像", subCategory: "フィルムカメラ", condition: "良好", wantItems: ["レンズ", "三脚", "フィルム"], image: "📷", owner: "taka_photo", ownerAvatar: "T", ownerUid: "seed", location: "東京都渋谷区", views: 234, likes: 18, status: "出品中", imageUrls: [] },
+  { id: "seed2", title: "Gibson レスポール エレキギター", category: "🎵 音楽・楽器", subCategory: "ギター（エレキ）", condition: "目立つ傷あり", wantItems: ["アコースティックギター", "エフェクター", "カメラ"], image: "🎸", owner: "music_lover", ownerAvatar: "M", ownerUid: "seed", location: "大阪府梅田", views: 512, likes: 42, status: "出品中", imageUrls: [] },
+  { id: "seed3", title: "Nintendo Switch + ソフト5本", category: "🎮 ゲーム", subCategory: "本体・周辺機器", condition: "ほぼ新品", wantItems: ["PS5", "Xbox", "ゲームソフト"], image: "🎮", owner: "gamer_yuki", ownerAvatar: "Y", ownerUid: "seed", location: "神奈川県横浜市", views: 891, likes: 76, status: "出品中", imageUrls: [] },
+  { id: "seed4", title: "登山用テント 2〜3人用", category: "⛺ アウトドア・スポーツ", subCategory: "キャンプ用品", condition: "良好", wantItems: ["登山靴", "バックパック", "望遠レンズ"], image: "⛺", owner: "outdoor_ken", ownerAvatar: "K", ownerUid: "seed", location: "長野県松本市", views: 145, likes: 11, status: "出品中", imageUrls: [] },
+  { id: "seed5", title: "Nespresso コーヒーメーカー", category: "💻 スマホ・PC・家電", subCategory: "その他", condition: "ほぼ新品", wantItems: ["空気清浄機", "電気ケトル", "財布"], image: "☕", owner: "cafe_home", ownerAvatar: "C", ownerUid: "seed", location: "福岡県福岡市", views: 328, likes: 27, status: "出品中", imageUrls: [] },
+  { id: "seed6", title: "折りたたみ自転車 20インチ", category: "⛺ アウトドア・スポーツ", subCategory: "自転車", condition: "良好", wantItems: ["電動キックボード", "スケートボード", "カメラ"], image: "🚲", owner: "cycling_ryo", ownerAvatar: "R", ownerUid: "seed", location: "愛知県名古屋市", views: 203, likes: 15, status: "出品中", imageUrls: [] },
+  { id: "seed7", title: "プロ一眼レフ Nikon D850", category: "📷 カメラ・映像", subCategory: "一眼レフ", condition: "良好", wantItems: ["ミラーレスカメラ", "ドローン", "ギター"], image: "📸", owner: "pro_shooter", ownerAvatar: "P", ownerUid: "seed", location: "東京都新宿区", views: 672, likes: 53, status: "出品中", imageUrls: [] },
+  { id: "seed8", title: "ハンドメイド革財布", category: "👕 ファッション", subCategory: "その他", condition: "新品同様", wantItems: ["バッグ", "ベルト", "腕時計"], image: "👜", owner: "craft_momo", ownerAvatar: "M", ownerUid: "seed", location: "京都府京都市", views: 189, likes: 22, status: "出品中", imageUrls: [] },
 ];
 
 const SAMPLE_WANTLIST = [
@@ -199,10 +199,11 @@ export default function SwapApp() {
 
   // Data
   const [selectedItem, setSelectedItem] = useState(null);
-  const [selectedOwner, setSelectedOwner] = useState(null); // 出品者プロフ用
+  const [selectedOwner, setSelectedOwner] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [searchQuery, setSearchQuery] = useState("");
   const [likedItems, setLikedItems] = useState([]);
+  const [allItems, setAllItems] = useState(SEED_ITEMS); // 全ユーザーの出品
   const [myItems, setMyItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(false);
   const [threads, setThreads] = useState(MOCK_THREADS);
@@ -397,10 +398,10 @@ export default function SwapApp() {
   };
   const toggleLike = (id, e) => { e.stopPropagation(); setLikedItems(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]); };
   const openDetail = (item) => { if (!item) return; setSelectedItem(item); setView("detail"); setSelectedMyItem(null); window.scrollTo(0, 0); };
-  const matchedItems = ALL_ITEMS.filter(item => getMatchReasons(item, myItems).length > 0);
+  const matchedItems = allItems.filter(item => getMatchReasons(item, myItems).length > 0);
   const totalUnread = threads.reduce((s, t) => s + t.unread, 0);
 
-  const filteredItems = ALL_ITEMS.filter(item => !blockedUsers.includes(item.owner)).filter(item => {
+  const filteredItems = allItems.filter(item => !blockedUsers.includes(item.owner)).filter(item => {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
     const ms = !searchQuery || item.title.includes(searchQuery) || item.wantItems?.some(w => w.includes(searchQuery));
     return mc && ms;
@@ -534,8 +535,11 @@ export default function SwapApp() {
     try {
       if (item.firestoreId && user) {
         await deleteDoc(doc(db, "users", user.uid, "items", item.firestoreId));
+        // postsからも削除
+        try { await deleteDoc(doc(db, "posts", String(item.id))); } catch(e) {}
       }
       setMyItems(prev => prev.filter(i => i.id !== item.id));
+      setAllItems(prev => prev.filter(i => i.id !== item.id));
       showToast("🗑️ 削除しました");
     } catch(e) { showToast("❌ 削除に失敗しました"); }
   };
@@ -595,7 +599,31 @@ export default function SwapApp() {
     return () => unsub();
   }, []);
 
-  // チャットのリアルタイム連携
+  // 全出品をFirestoreからリアルタイム取得
+  useEffect(() => {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      if (snap.empty) {
+        // 初回：シードデータを投入
+        seedInitialData();
+        return;
+      }
+      const items = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
+      setAllItems(items);
+    }, (err) => {
+      console.log("posts読み込みエラー:", err);
+      // エラー時はシードデータをそのまま使う
+    });
+    return () => unsub();
+  }, []);
+
+  const seedInitialData = async () => {
+    try {
+      for (const item of SEED_ITEMS) {
+        await setDoc(doc(db, "posts", item.id), { ...item, createdAt: serverTimestamp() });
+      }
+    } catch(e) { console.log("シード投入エラー:", e); }
+  };
   useEffect(() => {
     if (!user) return;
     const q = query(collection(db, "chats"), orderBy("updatedAt", "desc"));
@@ -983,7 +1011,7 @@ export default function SwapApp() {
                 <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                {ALL_ITEMS.slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
+                {allItems.slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
               </div>
             </div>
             <div style={{ padding: "12px 14px 0" }}>{AFFILIATE_ADS.slice(1).map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}</div>
@@ -1631,11 +1659,13 @@ export default function SwapApp() {
                 showToast("✅ 出品を更新しました");
               } else {
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
-                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, subCategory: postForm.subCategory || "その他", condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U" };
-                // Firestoreに保存
+                const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, subCategory: postForm.subCategory || "その他", condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U", location: profileForm.locationPrivate ? "非公開" : profileForm.location };
                 if (user) {
+                  // users/{uid}/items に保存（マイページ用）
                   const docRef = await addDoc(collection(db, "users", user.uid, "items"), newItem);
                   newItem.firestoreId = docRef.id;
+                  // posts に保存（全ユーザーに表示）
+                  await setDoc(doc(db, "posts", String(newItem.id)), { ...newItem, createdAt: serverTimestamp() });
                 }
                 setMyItems(prev => [newItem, ...prev]);
                 showToast(postType === "offer" ? "🎉 出品しました！" : "🙋 欲しいリストに投稿しました！");
@@ -1662,8 +1692,8 @@ export default function SwapApp() {
                 <p style={{ fontSize: 16, fontWeight: 800, color: "#1a1208", marginBottom: 3 }}>{selectedOwner.name}</p>
                 <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 5 }}>📍 {selectedOwner.location || "非公開"}</p>
                 <div style={{ display: "flex", gap: 8 }}>
-                  {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name).length >= 5 && <span style={{ background: "#d4a574", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#1a1208" }}>🏆 アクティブ</span>}
-                  <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 600, color: "#5a4a3a" }}>出品 {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name).length}件</span>
+                  {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name).length >= 5 && <span style={{ background: "#d4a574", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#1a1208" }}>🏆 アクティブ</span>}
+                  <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 600, color: "#5a4a3a" }}>出品 {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name).length}件</span>
                 </div>
               </div>
             </div>
@@ -1684,11 +1714,11 @@ export default function SwapApp() {
                 <button onClick={() => { if (window.confirm(`${selectedOwner.name} をブロックしますか？この人の出品が表示されなくなります。`)) blockUser(selectedOwner.name, selectedOwner.uid); }} className="bp" style={{ width: "100%", background: "#fef2f2", border: "none", borderRadius: 10, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#ef4444", cursor: "pointer", marginBottom: 12 }}>🚫 このユーザーをブロック</button>
               )}
               <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", marginBottom: 10 }}>📦 出品中のアイテム</p>
-              {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").length === 0 ? (
+              {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").length === 0 ? (
                 <p style={{ fontSize: 12, color: "#8a7a6a", textAlign: "center", padding: 20 }}>出品中のアイテムはありません</p>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                  {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").map(item => (
+                  {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").map(item => (
                     <div key={item.id} onClick={() => { setSelectedOwner(null); openDetail(item); }} className="ph" style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", cursor: "pointer" }}>
                       <div style={{ height: 90, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
                         {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}
@@ -1893,7 +1923,7 @@ export default function SwapApp() {
           {adminTab === "dashboard" && (
             <div style={{ padding: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                {[["📦 出品数", ALL_ITEMS.length + myItems.length, "#d4a574"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
+                {[["📦 出品数", allItems.length + myItems.length, "#d4a574"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
                   <div key={label} style={{ background: "#fff", borderRadius: 13, padding: 14, boxShadow: "0 2px 10px rgba(0,0,0,.06)", textAlign: "center" }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color }}>{val}</p>
                     <p style={{ fontSize: 11, color: "#8a7a6a" }}>{label}</p>
@@ -1918,8 +1948,8 @@ export default function SwapApp() {
           {/* ── 出品タブ ── */}
           {adminTab === "items" && (
             <div style={{ padding: 14 }}>
-              <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 10 }}>全出品 {ALL_ITEMS.length + myItems.length}件</p>
-              {[...ALL_ITEMS, ...myItems].map(item => (
+              <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 10 }}>全出品 {allItems.length + myItems.length}件</p>
+              {[...allItems, ...myItems].map(item => (
                 <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
                     <div style={{ width: 44, height: 44, background: "#f0ede8", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.image}</div>
@@ -1941,7 +1971,7 @@ export default function SwapApp() {
           {/* ── ユーザータブ ── */}
           {adminTab === "users" && (
             <div style={{ padding: 14 }}>
-              {[...new Map([...ALL_ITEMS, ...myItems].map(i => [i.owner, i])).values()].map(item => (
+              {[...new Map([...allItems, ...myItems].map(i => [i.owner, i])).values()].map(item => (
                 <div key={item.owner} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)", display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{item.ownerAvatar}</div>
                   <div style={{ flex: 1 }}>

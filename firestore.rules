@@ -2,7 +2,19 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ユーザーの出品アイテム
+    // 全出品（全ユーザー共有）
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null &&
+        (resource.data.ownerUid == request.auth.uid ||
+         request.auth.token.email == 'satoki4438@gmail.com');
+      allow delete: if request.auth != null &&
+        (resource.data.ownerUid == request.auth.uid ||
+         request.auth.token.email == 'satoki4438@gmail.com');
+    }
+
+    // ユーザーの出品アイテム（マイページ用）
     match /users/{uid}/items/{itemId} {
       allow read: if true;
       allow write: if request.auth != null && request.auth.uid == uid;
@@ -10,6 +22,11 @@ service cloud.firestore {
 
     // FCMトークン
     match /users/{uid}/tokens/{tokenId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ブロックリスト
+    match /users/{uid}/blocks/{blockId} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
