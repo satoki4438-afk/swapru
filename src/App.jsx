@@ -1648,6 +1648,9 @@ export default function SwapApp() {
               {[["商品名・タイトル", "title", postType === "offer" ? "例: Canon AE-1 フィルムカメラ" : "例: フィルムカメラ全般"], ["詳細・説明", "detail", postType === "offer" ? "状態、付属品など..." : "希望条件など..."], [postType === "offer" ? "交換希望アイテム（カンマ区切り）" : "交換に出せるもの", "wantItems", postType === "offer" ? "例: ギター, ゲーム機" : "例: Nintendo Switch"]].map(([label, key, ph]) => (
                 <div key={key} style={{ marginBottom: 11 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 4 }}>{label}</p>
+                  {key === "wantItems" && postType === "offer" && (
+                    <p style={{ fontSize: 10, color: "#8a7a6a", marginBottom: 5 }}>💡 空欄の場合はマイページの「欲しいもの」が使われます。この商品だけ特定のものと交換したい場合に入力してください</p>
+                  )}
                   {key === "detail" ? (
                     <textarea value={postForm[key]} onChange={e => setPostForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#1a1208", height: 65, resize: "none" }} />
                   ) : (
@@ -1711,7 +1714,7 @@ export default function SwapApp() {
                 setMyItems(prev => prev.map(i => i.id === editingItem.id ? { ...i, ...updatedData } : i));
                 showToast("✅ 出品を更新しました");
               } else {
-                const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
+                const wantArr = postForm.wantItems.trim() ? postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean) : profileForm.wantKeywords.filter(Boolean);
                 const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, subCategory: postForm.subCategory || "その他", condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U", location: profileForm.locationPrivate ? "非公開" : profileForm.location };
                 if (user) {
                   // users/{uid}/items に保存（マイページ用）
