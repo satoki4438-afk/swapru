@@ -1133,7 +1133,7 @@ export default function SwapApp() {
                           <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208" }}>{app.applicant}</p>
                           <span style={{ background: app.status === "保留中" ? "#fffbeb" : "#eff6ff", borderRadius: 20, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: app.status === "保留中" ? "#d97706" : "#3b82f6" }}>{app.status}</span>
                         </div>
-                        <p style={{ fontSize: 11, color: "#8a7a6a" }}>{app.myItemImage} {app.myItemTitle} → {app.itemImage} {app.itemTitle}</p>
+                        <p style={{ fontSize: 11, color: "#8a7a6a" }}>{app.myItemImage?.startsWith("http") ? "📦" : app.myItemImage} {app.myItemTitle} → {app.itemImage?.startsWith("http") ? "📦" : app.itemImage} {app.itemTitle}</p>
                       </div>
                     </div>
                     {app.message && <p style={{ fontSize: 11, color: "#5a4a3a", background: "#f7f4ef", borderRadius: 9, padding: "8px 10px", marginBottom: 10 }}>「{app.message}」</p>}
@@ -1153,7 +1153,7 @@ export default function SwapApp() {
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#8a7a6a", letterSpacing: 1, marginBottom: 7 }}>📤 申し込み中</p>
                 {applications.filter(a => a.applicantUid === user?.uid && a.status === "申し込み中").map(app => (
                   <div key={app.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)", display: "flex", gap: 10, alignItems: "center" }}>
-                    <div style={{ fontSize: 24 }}>{app.itemImage}</div>
+                    <div style={{ fontSize: 24 }}>{app.itemImage?.startsWith("http") ? <img src={app.itemImage} style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 6 }} /> : app.itemImage}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 12, color: "#1a1208", marginBottom: 2 }}>{app.itemTitle}</p>
                       <p style={{ fontSize: 10, color: "#8a7a6a" }}>返答待ち（24時間以内）</p>
