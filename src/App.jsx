@@ -199,6 +199,7 @@ export default function SwapApp() {
 
   // Data
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedOwner, setSelectedOwner] = useState(null); // 出品者プロフ用
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [searchQuery, setSearchQuery] = useState("");
   const [likedItems, setLikedItems] = useState([]);
@@ -1008,13 +1009,13 @@ export default function SwapApp() {
                   <p style={{ fontSize: 9, color: "#8a7a6a", fontWeight: 600, letterSpacing: 1, marginBottom: 5 }}>PR · このカテゴリのおすすめ</p>
                   {getAdsForCategory(selectedItem.category).slice(0, 1).map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+                <div onClick={() => setSelectedOwner({ name: selectedItem.owner, avatar: selectedItem.ownerAvatar, location: selectedItem.location, uid: selectedItem.ownerUid })} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer", background: "#f7f4ef", borderRadius: 12, padding: "9px 12px" }}>
                   <div style={{ width: 34, height: 34, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 12 }}>{selectedItem.ownerAvatar}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "#1a1208" }}>{selectedItem.owner}</p>
                     <p style={{ fontSize: 10, color: "#8a7a6a" }}>📍 {selectedItem.location}</p>
                   </div>
-                  <p style={{ fontSize: 10, color: "#8a7a6a" }}>👁 {selectedItem.views} · ❤️ {(selectedItem.likes || 0) + (likedItems.includes(selectedItem.id) ? 1 : 0)}</p>
+                  <p style={{ fontSize: 10, color: "#c4813a", fontWeight: 600 }}>プロフを見る →</p>
                 </div>
                 <button onClick={() => { setShowTradeModal(selectedItem); setSelectedMyItem(null); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 13, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 7 }}>⟳ 交換を申し込む（無料）</button>
                 <button onClick={() => { const t = threads.find(t => t.partner === selectedItem.owner); if (t) { openChat(t); } else { showToast("💬 メッセージを送りました！"); } }} className="bp" style={{ width: "100%", background: "#f0ede8", border: "none", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 7 }}>💬 メッセージを送る</button>
@@ -1600,6 +1601,79 @@ export default function SwapApp() {
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 14, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
               {editingItem ? "更新する" : postType === "offer" ? "無料で出品する" : "欲しいリストに投稿"}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── OWNER PROFILE ── */}
+      {selectedOwner && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setSelectedOwner(null)}>
+          <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 34, height: 4, background: "#d4c4a8", borderRadius: 2, margin: "14px auto 0" }} />
+
+            {/* ヘッダー */}
+            <div style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, borderBottom: "1px solid #e8dfd0" }}>
+              <div style={{ width: 60, height: 60, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{selectedOwner.avatar}</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ fontSize: 16, fontWeight: 800, color: "#1a1208", marginBottom: 3 }}>{selectedOwner.name}</p>
+                <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 5 }}>📍 {selectedOwner.location || "非公開"}</p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name).length >= 5 && <span style={{ background: "#d4a574", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#1a1208" }}>🏆 アクティブ</span>}
+                  <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 600, color: "#5a4a3a" }}>出品 {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name).length}件</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 評価サマリ */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#e8dfd0", margin: "0 0 14px" }}>
+              {[["⭐ 評価", "4.8"], ["🔁 成立", `${threads.filter(t => t.tradeStatus === "完了").length}回`], ["❌ キャンセル率", "0%"]].map(([label, val]) => (
+                <div key={label} style={{ background: "#fff", padding: "12px 0", textAlign: "center" }}>
+                  <p style={{ fontSize: 16, fontWeight: 800, color: "#1a1208" }}>{val}</p>
+                  <p style={{ fontSize: 9, color: "#8a7a6a" }}>{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 出品一覧 */}
+            <div style={{ padding: "0 14px 20px" }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", marginBottom: 10 }}>📦 出品中のアイテム</p>
+              {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").length === 0 ? (
+                <p style={{ fontSize: 12, color: "#8a7a6a", textAlign: "center", padding: 20 }}>出品中のアイテムはありません</p>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+                  {[...ALL_ITEMS, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").map(item => (
+                    <div key={item.id} onClick={() => { setSelectedOwner(null); openDetail(item); }} className="ph" style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", cursor: "pointer" }}>
+                      <div style={{ height: 90, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
+                        {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}
+                      </div>
+                      <div style={{ padding: "8px 9px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", lineHeight: 1.3, marginBottom: 3 }}>{item.title}</p>
+                        <p style={{ fontSize: 9, color: "#8a7a6a" }}>{item.condition}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* レビュー */}
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", margin: "18px 0 10px" }}>⭐ レビュー</p>
+              {[
+                { name: "guitar_lover", rating: 5, comment: "迅速に対応していただきありがとうございました！商品も説明通りで満足です。", date: "2週間前" },
+                { name: "camera_fan", rating: 5, comment: "丁寧な梱包で助かりました。またよろしくお願いします！", date: "1ヶ月前" },
+              ].map((review, i) => (
+                <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 13, marginBottom: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 28, height: 28, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 10 }}>{review.name.charAt(0).toUpperCase()}</div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: "#1a1208" }}>{review.name}</p>
+                      <p style={{ fontSize: 10, color: "#d4a574" }}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
+                    </div>
+                    <p style={{ fontSize: 10, color: "#8a7a6a" }}>{review.date}</p>
+                  </div>
+                  <p style={{ fontSize: 11, color: "#5a4a3a", lineHeight: 1.6 }}>{review.comment}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
