@@ -49,9 +49,7 @@ service cloud.firestore {
 
     // 申し込み
     match /applications/{appId} {
-      allow read: if request.auth != null &&
-        (resource.data.applicantUid == request.auth.uid ||
-         resource.data.itemOwnerUid == request.auth.uid);
+      allow read: if request.auth != null;
       allow create: if request.auth != null;
       allow update: if request.auth != null &&
         (resource.data.applicantUid == request.auth.uid ||

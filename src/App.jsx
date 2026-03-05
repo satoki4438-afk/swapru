@@ -249,9 +249,11 @@ export default function SwapApp() {
     if (!myItem) { showToast("⚠️ 提供するアイテムを選んでください"); return; }
     const now = new Date();
     const deadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    // Firestoreのpostsから最新のownerUidを取得
+    const itemOwnerUid = item.ownerUid && item.ownerUid !== "seed" ? item.ownerUid : item.firestoreOwnerUid || "";
     const app = {
       itemId: item.id, itemTitle: item.title, itemOwner: item.owner, itemImage: item.image,
-      itemOwnerUid: item.ownerUid || "",
+      itemOwnerUid,
       myItemId: myItem.id, myItemTitle: myItem.title, myItemImage: myItem.image || "📦",
       applicant: user?.name || "匿名", applicantUid: user?.uid, applicantAvatar: user?.avatar || "U",
       message, status: "申し込み中",
@@ -659,12 +661,18 @@ export default function SwapApp() {
   // 申し込みのリアルタイム連携
   useEffect(() => {
     if (!user) return;
-    const q = query(collection(db, "applications"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
+    const q1 = query(collection(db, "applications"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q1, (snap) => {
       const apps = snap.docs
         .map(d => ({ ...d.data(), id: d.id }))
-        .filter(a => a.itemOwnerUid === user.uid || a.applicantUid === user.uid);
+        .filter(a =>
+          a.applicantUid === user.uid ||
+          a.itemOwnerUid === user.uid ||
+          a.itemOwner === user.name // 名前でもマッチ（ownerUidがない場合の保険）
+        );
       if (apps.length > 0) setApplications(apps);
+    }, (err) => {
+      console.log("applications読み込みエラー:", err);
     });
     return () => unsub();
   }, [user]);
