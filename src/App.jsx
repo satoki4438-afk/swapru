@@ -218,6 +218,12 @@ export default function SwapApp() {
   const [showAdModal, setShowAdModal] = useState(false);
   const [adCountdown, setAdCountdown] = useState(10);
   const [pendingFirstMsg, setPendingFirstMsg] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(null); // item to report
+  const [reportReason, setReportReason] = useState("");
+  const [reports, setReports] = useState([]);
+  const [adminTab, setAdminTab] = useState("dashboard");
+  const ADMIN_EMAIL = "satoki4438@gmail.com";
+  const isAdmin = user?.email === ADMIN_EMAIL;
 
   // Profile settings state
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", locationPrivate: false, notify_message: true, notify_match: true, notify_news: false, avatarUrl: null, avatarEmoji: null, preferredCategories: [] });
@@ -233,6 +239,33 @@ export default function SwapApp() {
   const [boostExpiry, setBoostExpiry] = useState(null); // 上位表示期限
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const submitReport = async () => {
+    if (!reportReason) { showToast("⚠️ 通報理由を選択してください"); return; }
+    const report = { id: Date.now(), itemId: showReportModal.id, itemTitle: showReportModal.title, itemOwner: showReportModal.owner, reason: reportReason, reportedBy: user?.email || "匿名", createdAt: new Date().toISOString(), status: "未対応" };
+    try {
+      await addDoc(collection(db, "reports"), report);
+      setReports(prev => [...prev, report]);
+    } catch(e) { console.error(e); }
+    setShowReportModal(null);
+    setReportReason("");
+    showToast("🚨 通報を受け付けました。確認後対応します。");
+  };
+
+  const adminDeleteItem = async (item, reason) => {
+    try {
+      await addDoc(collection(db, "notifications"), { uid: item.ownerUid, type: "deletion", message: `⚠️ ご出品の「${item.title}」は利用規約違反（${reason}）のため削除されました。ご不明な点はお問い合わせください。`, createdAt: new Date().toISOString(), read: false });
+      showToast(`🗑️ 「${item.title}」を削除しました`);
+    } catch(e) { showToast("❌ 削除に失敗しました"); }
+  };
+
+  const adminBanUser = async (userEmail, ownerUid) => {
+    try {
+      await addDoc(collection(db, "notifications"), { uid: ownerUid, type: "ban", message: "🚫 利用規約違反が確認されたため、アカウントを停止しました。お問い合わせはcontact@swapru.appまで。", createdAt: new Date().toISOString(), read: false });
+      await addDoc(collection(db, "bans"), { email: userEmail, uid: ownerUid, bannedAt: new Date().toISOString() });
+      showToast(`🚫 ${userEmail} をBANしました`);
+    } catch(e) { showToast("❌ BANに失敗しました"); }
+  };
 
   const handleShare = async (item) => {
     const url = `https://swapru.vercel.app/`;
@@ -838,11 +871,12 @@ export default function SwapApp() {
                 </div>
                 <button onClick={() => { setShowTradeModal(selectedItem); setSelectedMyItem(null); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 13, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 7 }}>⟳ 交換を申し込む（無料）</button>
                 <button onClick={() => { const t = threads.find(t => t.partner === selectedItem.owner); if (t) { openChat(t); } else { showToast("💬 メッセージを送りました！"); } }} className="bp" style={{ width: "100%", background: "#f0ede8", border: "none", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 7 }}>💬 メッセージを送る</button>
-                <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#fff", border: "1px solid #e8dfd0", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#fff", border: "1px solid #e8dfd0", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 7 }}>
                   <span>📤</span>
                   <span>シェアする</span>
                   <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#c4813a", fontWeight: 700 }}>3回で上位権利GET</span>
                 </button>
+                <button onClick={() => { setShowReportModal(selectedItem); setReportReason(""); }} className="bp" style={{ width: "100%", background: "none", border: "none", padding: "6px 0", color: "#b4a494", fontSize: 11, cursor: "pointer" }}>🚨 この出品を通報する</button>
               </div>
             </div>
           </div>
@@ -1217,6 +1251,7 @@ export default function SwapApp() {
                   <button onClick={() => setLegalModal("contact")} className="bp" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 10, padding: "11px", color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>📮 お問い合わせ</button>
                 </div>
 
+                {isAdmin && <button onClick={() => setView("admin")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#1a1208,#3d2b15)", border: "none", borderRadius: 12, padding: 12, color: "#d4a574", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 7 }}>🛡️ 管理画面</button>}
                 <button onClick={() => { setUser(null); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #e8dfd0", borderRadius: 12, padding: 12, color: "#8a7a6a", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
                 <button className="bp" style={{ width: "100%", background: "none", border: "1px solid #fecaca", borderRadius: 12, padding: 12, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>アカウントを削除する</button>
               </div>
@@ -1515,6 +1550,133 @@ export default function SwapApp() {
               </>)}
 
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADMIN ── */}
+      {view === "admin" && isAdmin && (
+        <div style={{ paddingBottom: 80 }}>
+          <div style={{ background: "#1a1208", padding: "16px", display: "flex", alignItems: "center", gap: 12 }}>
+            <button onClick={() => setView("mypage")} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer" }}>←</button>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#d4a574" }}>🛡️ 管理画面</h2>
+          </div>
+
+          {/* 管理タブ */}
+          <div style={{ display: "flex", background: "#fff", borderBottom: "1px solid #e8dfd0" }}>
+            {[["dashboard","📊 概要"], ["items","📦 出品"], ["users","👥 ユーザー"], ["reports","🚨 通報"]].map(([tab, label]) => (
+              <button key={tab} onClick={() => setAdminTab(tab)} style={{ flex: 1, background: "none", border: "none", borderBottom: adminTab === tab ? "2px solid #d4a574" : "2px solid transparent", padding: "10px 0", fontSize: 10, fontWeight: 700, color: adminTab === tab ? "#c4813a" : "#8a7a6a", cursor: "pointer" }}>{label}</button>
+            ))}
+          </div>
+
+          {/* ── 概要タブ ── */}
+          {adminTab === "dashboard" && (
+            <div style={{ padding: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                {[["📦 出品数", ALL_ITEMS.length + myItems.length, "#d4a574"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
+                  <div key={label} style={{ background: "#fff", borderRadius: 13, padding: 14, boxShadow: "0 2px 10px rgba(0,0,0,.06)", textAlign: "center" }}>
+                    <p style={{ fontSize: 22, fontWeight: 800, color }}>{val}</p>
+                    <p style={{ fontSize: 11, color: "#8a7a6a" }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "#fff", borderRadius: 13, padding: 14, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", marginBottom: 10 }}>🚨 未対応通報</p>
+                {reports.filter(r => r.status === "未対応").length === 0 ? (
+                  <p style={{ fontSize: 12, color: "#8a7a6a", textAlign: "center", padding: "10px 0" }}>通報はありません ✅</p>
+                ) : reports.filter(r => r.status === "未対応").slice(0, 3).map(r => (
+                  <div key={r.id} style={{ background: "#fef2f2", borderRadius: 9, padding: 10, marginBottom: 7 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#ef4444" }}>{r.reason}</p>
+                    <p style={{ fontSize: 11, color: "#5a4a3a" }}>{r.itemTitle}</p>
+                    <p style={{ fontSize: 10, color: "#8a7a6a" }}>by {r.reportedBy}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── 出品タブ ── */}
+          {adminTab === "items" && (
+            <div style={{ padding: 14 }}>
+              <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 10 }}>全出品 {ALL_ITEMS.length + myItems.length}件</p>
+              {[...ALL_ITEMS, ...myItems].map(item => (
+                <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                    <div style={{ width: 44, height: 44, background: "#f0ede8", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.image}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 12, color: "#1a1208", marginBottom: 2 }}>{item.title}</p>
+                      <p style={{ fontSize: 10, color: "#8a7a6a" }}>by {item.owner} · {item.category}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 7 }}>
+                    {["偽物・模倣品", "期限切れ食品", "不適切", "詐欺"].map(reason => (
+                      <button key={reason} onClick={() => { if (window.confirm(`「${item.title}」を「${reason}」として削除しますか？`)) adminDeleteItem(item, reason); }} className="bp" style={{ flex: 1, background: "#fef2f2", border: "none", borderRadius: 7, padding: "6px 0", fontSize: 9, fontWeight: 700, color: "#ef4444", cursor: "pointer" }}>{reason}</button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── ユーザータブ ── */}
+          {adminTab === "users" && (
+            <div style={{ padding: 14 }}>
+              {[...new Map([...ALL_ITEMS, ...myItems].map(i => [i.owner, i])).values()].map(item => (
+                <div key={item.owner} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)", display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{item.ownerAvatar}</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208" }}>{item.owner}</p>
+                    <p style={{ fontSize: 10, color: "#8a7a6a" }}>{item.location}</p>
+                  </div>
+                  <button onClick={() => { if (window.confirm(`${item.owner} をBANしますか？`)) adminBanUser(item.owner, item.ownerUid || ""); }} className="bp" style={{ background: "#fef2f2", border: "none", borderRadius: 9, padding: "7px 12px", fontSize: 11, fontWeight: 700, color: "#ef4444", cursor: "pointer" }}>🚫 BAN</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── 通報タブ ── */}
+          {adminTab === "reports" && (
+            <div style={{ padding: 14 }}>
+              {reports.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 40, color: "#8a7a6a" }}>
+                  <p style={{ fontSize: 32, marginBottom: 8 }}>✅</p>
+                  <p style={{ fontSize: 13 }}>通報はありません</p>
+                </div>
+              ) : reports.map(r => (
+                <div key={r.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ background: r.status === "未対応" ? "#fef2f2" : "#dcfce7", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: r.status === "未対応" ? "#ef4444" : "#16a34a" }}>{r.status}</span>
+                    <p style={{ fontSize: 10, color: "#8a7a6a" }}>{new Date(r.createdAt).toLocaleDateString("ja-JP")}</p>
+                  </div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", marginBottom: 2 }}>{r.itemTitle}</p>
+                  <p style={{ fontSize: 11, color: "#ef4444", marginBottom: 2 }}>理由：{r.reason}</p>
+                  <p style={{ fontSize: 10, color: "#8a7a6a", marginBottom: 10 }}>通報者：{r.reportedBy}</p>
+                  {r.status === "未対応" && (
+                    <div style={{ display: "flex", gap: 7 }}>
+                      <button onClick={() => { adminDeleteItem({ id: r.itemId, title: r.itemTitle, owner: r.itemOwner, ownerUid: "" }, r.reason); setReports(prev => prev.map(rep => rep.id === r.id ? { ...rep, status: "対応済み" } : rep)); }} className="bp" style={{ flex: 1, background: "#fef2f2", border: "none", borderRadius: 9, padding: "8px 0", fontSize: 11, fontWeight: 700, color: "#ef4444", cursor: "pointer" }}>🗑️ 削除する</button>
+                      <button onClick={() => setReports(prev => prev.map(rep => rep.id === r.id ? { ...rep, status: "対応済み" } : rep))} className="bp" style={{ flex: 1, background: "#f0fdf4", border: "none", borderRadius: 9, padding: "8px 0", fontSize: 11, fontWeight: 700, color: "#16a34a", cursor: "pointer" }}>✅ 問題なし</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 通報モーダル */}
+      {showReportModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowReportModal(null)}>
+          <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+            <div style={{ width: 34, height: 4, background: "#d4c4a8", borderRadius: 2, margin: "0 auto 15px" }} />
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#1a1208", marginBottom: 4 }}>🚨 通報する</h2>
+            <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 14 }}>「{showReportModal.title}」を通報</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+              {["偽物・模倣品", "賞味期限切れ食品", "詐欺・虚偽出品", "不適切なコンテンツ", "スパム・宣伝", "その他"].map(reason => (
+                <button key={reason} onClick={() => setReportReason(reason)} className="bp" style={{ background: reportReason === reason ? "#1a1208" : "#fff", border: `2px solid ${reportReason === reason ? "#d4a574" : "#e8dfd0"}`, borderRadius: 10, padding: "10px 14px", textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 600, color: reportReason === reason ? "#d4a574" : "#5a4a3a" }}>{reason}</button>
+              ))}
+            </div>
+            <button onClick={submitReport} className="bp" style={{ width: "100%", background: reportReason ? "#ef4444" : "#e8dfd0", border: "none", borderRadius: 12, padding: 13, color: reportReason ? "#fff" : "#b4a494", fontWeight: 700, fontSize: 14, cursor: reportReason ? "pointer" : "default" }}>通報を送信する</button>
           </div>
         </div>
       )}
