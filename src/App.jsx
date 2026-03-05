@@ -214,7 +214,10 @@ export default function SwapApp() {
   const [postType, setPostType] = useState("offer");
   const [showTradeModal, setShowTradeModal] = useState(null);
   const [selectedMyItem, setSelectedMyItem] = useState(null);
-  const [editingItem, setEditingItem] = useState(null); // for edit listing
+  const [editingItem, setEditingItem] = useState(null);
+  const [showAdModal, setShowAdModal] = useState(false);
+  const [adCountdown, setAdCountdown] = useState(10);
+  const [pendingFirstMsg, setPendingFirstMsg] = useState(null);
 
   // Profile settings state
   const [profileForm, setProfileForm] = useState({ name: "", bio: "", location: "東京都", locationPrivate: false, notify_message: true, notify_match: true, notify_news: false, avatarUrl: null, avatarEmoji: null, preferredCategories: [] });
@@ -288,6 +291,14 @@ export default function SwapApp() {
   // Chat scroll
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [openThread]);
 
+  // 広告カウントダウン
+  useEffect(() => {
+    if (!showAdModal) return;
+    if (adCountdown <= 0) { sendPendingMessage(); return; }
+    const timer = setTimeout(() => setAdCountdown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [showAdModal, adCountdown]);
+
   // FCM通知セットアップ
   useEffect(() => {
     if (!user) return;
@@ -315,12 +326,33 @@ export default function SwapApp() {
   const sendMessage = () => {
     if (!chatInput.trim() || !openThread) return;
     const newMsg = { id: Date.now(), from: "me", text: chatInput.trim(), time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
+    const isFirstMsg = openThread.messages.filter(m => m.from === "me").length === 0;
+    if (isFirstMsg) {
+      setPendingFirstMsg(newMsg);
+      setShowAdModal(true);
+      setAdCountdown(10);
+      setChatInput("");
+      return;
+    }
     setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: newMsg.time, unread: 0 } : t));
     setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
     setChatInput("");
-    // mock auto-reply
     setTimeout(() => {
       const reply = { id: Date.now() + 1, from: "them", text: "なるほど！それは良さそうですね。もう少し詳しく聞かせてもらえますか？", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
+      setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
+      setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
+    }, 1200);
+  };
+
+  const sendPendingMessage = () => {
+    if (!pendingFirstMsg || !openThread) return;
+    const newMsg = pendingFirstMsg;
+    setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: newMsg.time, unread: 0 } : t));
+    setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
+    setPendingFirstMsg(null);
+    setShowAdModal(false);
+    setTimeout(() => {
+      const reply = { id: Date.now() + 1, from: "them", text: "はじめまして！交換に興味を持っていただきありがとうございます😊", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
       setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
       setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
     }, 1200);
@@ -1344,6 +1376,35 @@ export default function SwapApp() {
       )}
 
       {/* ── TRADE MODAL ── */}
+      {/* 交渉開始広告モーダル */}
+      {showAdModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 390, overflow: "hidden", animation: "up .3s ease" }}>
+            <div style={{ background: "#1a1208", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <p style={{ color: "#8a7a6a", fontSize: 11 }}>📢 スポンサー</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <p style={{ color: "#d4a574", fontSize: 12, fontWeight: 700 }}>{adCountdown}秒</p>
+                {adCountdown <= 0 && <button onClick={sendPendingMessage} style={{ background: "#d4a574", border: "none", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 700, color: "#1a1208", cursor: "pointer" }}>スキップ ✕</button>}
+              </div>
+            </div>
+            <div style={{ padding: 20 }}>
+              <div style={{ background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 14, padding: 20, marginBottom: 14, textAlign: "center" }}>
+                <p style={{ fontSize: 36, marginBottom: 8 }}>📦</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: "#1a1208", marginBottom: 4 }}>らくらくメルカリ便</p>
+                <p style={{ fontSize: 12, color: "#5a4a3a", marginBottom: 12, lineHeight: 1.5 }}>交換後の発送に便利！全国一律料金で匿名配送。ローソン・ファミマで簡単発送。</p>
+                <a href="https://www.mercari.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: 20, padding: "8px 20px", fontSize: 12, fontWeight: 700, color: "#1a1208", textDecoration: "none" }}>詳しく見る →</a>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ display: "flex", gap: 4, justifyContent: "center", marginBottom: 8 }}>
+                  {[...Array(10)].map((_, i) => <div key={i} style={{ width: 20, height: 4, borderRadius: 2, background: i < (10 - adCountdown) ? "#d4a574" : "#e8dfd0" }} />)}
+                </div>
+                <p style={{ fontSize: 10, color: "#8a7a6a" }}>{adCountdown > 0 ? `${adCountdown}秒後にスキップできます` : "準備完了！"}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showTradeModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowTradeModal(null)}>
           <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "85vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
