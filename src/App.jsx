@@ -1622,7 +1622,7 @@ export default function SwapApp() {
                   ) : (
                     <>
                       <span style={{ fontSize: 28, marginBottom: 4 }}>📷</span>
-                      <p style={{ fontSize: 12, color: "#8a7a6a", fontWeight: 600 }}>写真を追加</p>
+                      <p style={{ fontSize: 12, color: "#8a7a6a", fontWeight: 600 }}>写真を追加 <span style={{ color: "#ef4444" }}>必須</span></p>
                       <p style={{ fontSize: 10, color: "#b4a494" }}>{(postForm.imageUrls || []).length}/3枚</p>
                     </>
                   )}
@@ -1700,6 +1700,7 @@ export default function SwapApp() {
             <button onClick={async () => {
               if (!postForm.title.trim()) { showToast("⚠️ タイトルを入力してください"); return; }
               if (!postForm.subCategory) { showToast("⚠️ 中分類を選択してください"); return; }
+              if (postType === "offer" && !editingItem && (!postForm.imageUrls || postForm.imageUrls.length === 0)) { showToast("📷 写真を1枚以上追加してください"); return; }
               if (editingItem) {
                 // Firestore更新
                 const wantArr = postForm.wantItems.split(/[,、]/).map(s => s.trim()).filter(Boolean);
