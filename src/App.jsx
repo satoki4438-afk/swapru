@@ -157,7 +157,7 @@ function WantCard({ item, onRespond, delay = 0 }) {
       </div>
       <div style={{ padding: 13 }}>
         <div style={{ display: "flex", gap: 11, marginBottom: 9 }}>
-          <div style={{ width: 60, height: 60, background: "linear-gradient(135deg,#f0f7ff,#dbeafe)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.image}</div>
+          <div style={{ width: 60, height: 60, background: "linear-gradient(135deg,#f0f7ff,#dbeafe)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 60)}</div>
           <div style={{ flex: 1 }}>
             <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 3 }}>{item.title}</p>
             <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#5a4a3a" }}>{item.category}</span>
@@ -185,6 +185,13 @@ function WantCard({ item, onRespond, delay = 0 }) {
 }
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
+
+// 画像URLを安全に表示するヘルパー
+const imgSafe = (src, size = 36) => {
+  if (!src) return <span style={{ fontSize: size * 0.7 }}>📦</span>;
+  if (src.startsWith("http")) return <img src={src} style={{ width: size, height: size, objectFit: "cover", borderRadius: 6, display: "block" }} />;
+  return <span style={{ fontSize: size * 0.7 }}>{src}</span>;
+};
 
 export default function SwapApp() {
   // Auth
@@ -405,7 +412,7 @@ export default function SwapApp() {
   const matchedItems = allItems.filter(item => getMatchReasons(item, myItems).length > 0);
   const totalUnread = threads.reduce((s, t) => s + t.unread, 0);
 
-  const filteredItems = allItems.filter(item => !blockedUsers.includes(item.owner)).filter(item => {
+  const filteredItems = allItems.filter(item => !blockedUsers.includes(item.owner)).filter(item => item.ownerUid !== user?.uid && item.owner !== user?.name).filter(item => {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
     const ms = !searchQuery || item.title.includes(searchQuery) || item.wantItems?.some(w => w.includes(searchQuery));
     return mc && ms;
@@ -1196,7 +1203,7 @@ export default function SwapApp() {
             <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 12 }}>あなたの出品物のキーワードを求めている人。自分でザッピングして確かめよう！</p>
             <div style={{ background: "#1a1208", borderRadius: 12, padding: 12, marginBottom: 12 }}>
               <p style={{ fontSize: 9, color: "#d4a574", fontWeight: 700, letterSpacing: 2, marginBottom: 6 }}>あなたの出品中</p>
-              <div style={{ display: "flex", gap: 7 }}>{myItems.map(item => <div key={item.id} style={{ background: "rgba(255,255,255,.08)", borderRadius: 9, padding: "7px 10px", flex: 1, display: "flex", gap: 7, alignItems: "center" }}><span style={{ fontSize: 20 }}>{item.image}</span><p style={{ fontSize: 10, color: "#f0ede8", fontWeight: 600, lineHeight: 1.2 }}>{item.title}</p></div>)}</div>
+              <div style={{ display: "flex", gap: 7 }}>{myItems.map(item => <div key={item.id} style={{ background: "rgba(255,255,255,.08)", borderRadius: 9, padding: "7px 10px", flex: 1, display: "flex", gap: 7, alignItems: "center" }}><span style={{ fontSize: 20, display:"flex", alignItems:"center" }}>{imgSafe(item.image, 24)}</span><p style={{ fontSize: 10, color: "#f0ede8", fontWeight: 600, lineHeight: 1.2 }}>{item.title}</p></div>)}</div>
             </div>
             {matchedItems.map((item, i) => {
               const reasons = getMatchReasons(item, myItems);
@@ -1962,7 +1969,7 @@ export default function SwapApp() {
               {[...allItems, ...myItems].map(item => (
                 <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                    <div style={{ width: 44, height: 44, background: "#f0ede8", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{item.image}</div>
+                    <div style={{ width: 44, height: 44, background: "#f0ede8", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 44)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 12, color: "#1a1208", marginBottom: 2 }}>{item.title}</p>
                       <p style={{ fontSize: 10, color: "#8a7a6a" }}>by {item.owner} · {item.category}</p>
