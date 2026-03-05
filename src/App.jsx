@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { auth, provider, db, storage } from "./firebase";
+import { auth, provider, db, storage, messaging, getToken, onMessage } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -223,8 +223,45 @@ export default function SwapApp() {
   const [postForm, setPostForm] = useState({ title: "", category: "📷 カメラ・映像", subCategory: "", condition: "良好", detail: "", wantItems: "", image: "📷", imageUrls: [], uploading: false, expiryDate: "", shippingNote: "常温OK" });
 
   const [toast, setToast] = useState(null);
+  const [fcmToken, setFcmToken] = useState(null);
+  const [shareCount, setShareCount] = useState(0); // 累積シェア数
+  const [boostCredits, setBoostCredits] = useState(0); // 上位表示権利（最大2）
+  const [boostedItemId, setBoostedItemId] = useState(null); // 現在上位表示中の商品ID
+  const [boostExpiry, setBoostExpiry] = useState(null); // 上位表示期限
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const handleShare = async (item) => {
+    const url = `https://swapru.vercel.app/`;
+    const text = `【Swapru】${item.title} を交換したい！\n交換希望：${item.wantItems?.join("・") || "相談"}\n`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: item.title, text, url });
+      } else {
+        await navigator.clipboard.writeText(text + url);
+        showToast("📋 リンクをコピーしました！");
+      }
+      const newCount = shareCount + 1;
+      setShareCount(newCount);
+      if (newCount % 3 === 0 && boostCredits < 2) {
+        setBoostCredits(c => c + 1);
+        showToast("🎉 シェア3回達成！検索上位権利を獲得しました🚀");
+      } else {
+        const remaining = 3 - (newCount % 3);
+        showToast(`📤 シェアしました！あと${remaining}回で上位表示権利GET`);
+      }
+    } catch(e) { if (e.name !== "AbortError") showToast("❌ シェアに失敗しました"); }
+  };
+
+  const handleBoost = (itemId) => {
+    if (boostCredits <= 0) { showToast("⚠️ 上位表示権利がありません（シェア3回でGET！）"); return; }
+    if (boostedItemId === itemId) { showToast("⚠️ すでに上位表示中です"); return; }
+    const expiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    setBoostedItemId(itemId);
+    setBoostExpiry(expiry);
+    setBoostCredits(c => c - 1);
+    showToast("🚀 48時間の検索上位表示を開始しました！");
+  };
   const toggleLike = (id, e) => { e.stopPropagation(); setLikedItems(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]); };
   const openDetail = (item) => { if (!item) return; setSelectedItem(item); setView("detail"); setSelectedMyItem(null); window.scrollTo(0, 0); };
   const matchedItems = ALL_ITEMS.filter(item => getMatchReasons(item, myItems).length > 0);
@@ -234,6 +271,10 @@ export default function SwapApp() {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
     const ms = !searchQuery || item.title.includes(searchQuery) || item.wantItems?.some(w => w.includes(searchQuery));
     return mc && ms;
+  }).sort((a, b) => {
+    if (a.id === boostedItemId) return -1;
+    if (b.id === boostedItemId) return 1;
+    return 0;
   });
   const filteredWants = SAMPLE_WANTLIST.filter(item => {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
@@ -246,6 +287,30 @@ export default function SwapApp() {
 
   // Chat scroll
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [openThread]);
+
+  // FCM通知セットアップ
+  useEffect(() => {
+    if (!user) return;
+    const setupFCM = async () => {
+      try {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") return;
+        const token = await getToken(messaging, { vapidKey: "BEdUq87Qs4gWdyw4psTHk8goAJn-znUGzZ3nQ3F_SWVo97QXyPo_GkhZJvHE8lSqyfWcnzUBfbSOLdkUyzY-ZZM" });
+        if (token) {
+          setFcmToken(token);
+          await setDoc(doc(db, "users", user.uid, "tokens", "fcm"), { token, updatedAt: new Date().toISOString() });
+        }
+      } catch(e) { console.log("FCM setup failed:", e); }
+    };
+    setupFCM();
+
+    // フォアグラウンド通知受信
+    const unsubscribe = onMessage(messaging, (payload) => {
+      const { title, body } = payload.notification || {};
+      if (title) showToast(`🔔 ${title}：${body}`);
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   const sendMessage = () => {
     if (!chatInput.trim() || !openThread) return;
@@ -740,7 +805,12 @@ export default function SwapApp() {
                   <p style={{ fontSize: 10, color: "#8a7a6a" }}>👁 {selectedItem.views} · ❤️ {(selectedItem.likes || 0) + (likedItems.includes(selectedItem.id) ? 1 : 0)}</p>
                 </div>
                 <button onClick={() => { setShowTradeModal(selectedItem); setSelectedMyItem(null); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 13, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 7 }}>⟳ 交換を申し込む（無料）</button>
-                <button onClick={() => { const t = threads.find(t => t.partner === selectedItem.owner); if (t) { openChat(t); } else { showToast("💬 メッセージを送りました！"); } }} className="bp" style={{ width: "100%", background: "#f0ede8", border: "none", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>💬 メッセージを送る</button>
+                <button onClick={() => { const t = threads.find(t => t.partner === selectedItem.owner); if (t) { openChat(t); } else { showToast("💬 メッセージを送りました！"); } }} className="bp" style={{ width: "100%", background: "#f0ede8", border: "none", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 7 }}>💬 メッセージを送る</button>
+                <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#fff", border: "1px solid #e8dfd0", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  <span>📤</span>
+                  <span>シェアする</span>
+                  <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#c4813a", fontWeight: 700 }}>3回で上位権利GET</span>
+                </button>
               </div>
             </div>
           </div>
@@ -879,11 +949,14 @@ export default function SwapApp() {
                       <p style={{ fontSize: 11, color: "#5a4a3a" }}>{item.wantItems?.join("・")}</p>
                     </div>
                     {/* アクションボタン */}
-                    <div style={{ display: "flex", gap: 7 }}>
+                    <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
                       <button onClick={() => { setEditingItem(item); setPostForm({ title: item.title, category: item.category, condition: item.condition, detail: "", wantItems: item.wantItems?.join("、"), image: item.image }); setPostType("offer"); setShowPostModal(true); }} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: "#5a4a3a", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>✏️ 編集</button>
                       <button onClick={() => toggleItemStatus(item)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: item.status === "非公開" ? "#16a34a" : "#d97706", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>{item.status === "非公開" ? "👁 公開する" : "🙈 非公開"}</button>
                       <button onClick={() => deleteMyItem(item)} className="bp" style={{ width: 38, background: "#fef2f2", border: "none", borderRadius: 9, color: "#ef4444", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>🗑</button>
                     </div>
+                    <button onClick={() => handleBoost(item.id)} className="bp" style={{ width: "100%", background: boostedItemId === item.id ? "linear-gradient(135deg,#fbbf24,#f59e0b)" : boostCredits > 0 ? "linear-gradient(135deg,#1a1208,#3d2b15)" : "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: boostedItemId === item.id ? "#1a1208" : boostCredits > 0 ? "#d4a574" : "#b4a494", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                      {boostedItemId === item.id ? "🚀 上位表示中（48h）" : boostCredits > 0 ? `🚀 上位表示する（権利 ${boostCredits}/2）` : "🚀 上位表示（シェア3回でGET）"}
+                    </button>
                   </div>
                 ))}
 
@@ -970,6 +1043,29 @@ export default function SwapApp() {
             {/* ── 設定タブ ── */}
             {mypageTab === "settings" && (
               <div style={{ padding: 14, width: "100%" }}>
+
+                {/* シェア・上位表示ステータス */}
+                <div style={{ background: "linear-gradient(135deg,#1a1208,#3d2b15)", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 4px 16px rgba(0,0,0,.15)" }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, color: "#d4a574", marginBottom: 12 }}>🚀 シェア＆上位表示</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+                    <div style={{ background: "rgba(255,255,255,.07)", borderRadius: 10, padding: 11, textAlign: "center" }}>
+                      <p style={{ fontSize: 22, fontWeight: 800, color: "#d4a574" }}>{shareCount}</p>
+                      <p style={{ fontSize: 10, color: "#8a7a6a" }}>累積シェア数</p>
+                      <p style={{ fontSize: 9, color: "#6a5a4a", marginTop: 2 }}>次の権利まであと{3 - (shareCount % 3)}回</p>
+                    </div>
+                    <div style={{ background: "rgba(255,255,255,.07)", borderRadius: 10, padding: 11, textAlign: "center" }}>
+                      <p style={{ fontSize: 22, fontWeight: 800, color: boostCredits > 0 ? "#fbbf24" : "#6a5a4a" }}>{boostCredits}/2</p>
+                      <p style={{ fontSize: 10, color: "#8a7a6a" }}>上位表示権利</p>
+                      <p style={{ fontSize: 9, color: "#6a5a4a", marginTop: 2 }}>最大2つストック可</p>
+                    </div>
+                  </div>
+                  <div style={{ background: "rgba(255,255,255,.05)", borderRadius: 10, padding: 10 }}>
+                    <div style={{ display: "flex", gap: 4, marginBottom: 4 }}>
+                      {[1,2,3].map(i => <div key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: (shareCount % 3) >= i ? "#d4a574" : "rgba(255,255,255,.15)" }} />)}
+                    </div>
+                    <p style={{ fontSize: 10, color: "#8a7a6a", textAlign: "center" }}>シェア3回で上位表示権利GET！</p>
+                  </div>
+                </div>
                 {/* プロフィール */}
                 <div style={{ background: "#fff", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#1a1208", marginBottom: 13 }}>👤 プロフィール</h3>
@@ -1058,7 +1154,18 @@ export default function SwapApp() {
                         <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1208" }}>{label}</p>
                         <p style={{ fontSize: 10, color: "#8a7a6a", marginTop: 2 }}>{desc}</p>
                       </div>
-                      <div onClick={() => setProfileForm(f => ({ ...f, [key]: !f[key] }))} style={{ width: 44, height: 24, background: profileForm[key] ? "#d4a574" : "#e8dfd0", borderRadius: 12, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
+                      <div onClick={async () => {
+                        const newVal = !profileForm[key];
+                        if (key === "notify_message" && newVal && !fcmToken) {
+                          try {
+                            const permission = await Notification.requestPermission();
+                            if (permission !== "granted") { showToast("⚠️ 通知が許可されていません"); return; }
+                            const token = await getToken(messaging, { vapidKey: "BEdUq87Qs4gWdyw4psTHk8goAJn-znUGzZ3nQ3F_SWVo97QXyPo_GkhZJvHE8lSqyfWcnzUBfbSOLdkUyzY-ZZM" });
+                            if (token) { setFcmToken(token); await setDoc(doc(db, "users", user.uid, "tokens", "fcm"), { token, updatedAt: new Date().toISOString() }); }
+                          } catch(e) { showToast("❌ 通知の設定に失敗しました"); return; }
+                        }
+                        setProfileForm(f => ({ ...f, [key]: newVal }));
+                      }} style={{ width: 44, height: 24, background: profileForm[key] ? "#d4a574" : "#e8dfd0", borderRadius: 12, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
                         <div style={{ position: "absolute", top: 3, left: profileForm[key] ? 22 : 3, width: 18, height: 18, background: "#fff", borderRadius: "50%", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,.2)" }} />
                       </div>
                     </div>
@@ -1303,10 +1410,11 @@ export default function SwapApp() {
                   ["第1条（目的）", "本規約は、Swapru（以下「本サービス」）の利用条件を定めるものです。ユーザーの皆様には本規約に従って本サービスをご利用いただきます。"],
                   ["第2条（サービスの内容）", "本サービスは、ユーザー同士が不用品を無償で交換するためのマッチングプラットフォームです。運営者は取引の当事者ではなく、交換の成立・履行・結果について一切の責任を負いません。"],
                   ["第3条（免責事項）", "本サービスを通じて行われる取引はすべてユーザー間の個人取引です。取引に関するトラブル（商品の不具合、未着、破損、詐欺等）は、当事者間で解決していただく必要があります。運営者はいかなる場合も取引トラブルへの介入・補償・賠償を行いません。"],
-                  ["第4条（禁止事項）", "偽りの情報による出品・詐欺的行為、他ユーザーへの嫌がらせ・誹謗中傷、違法物・危険物の出品、著作権を侵害するコンテンツの投稿、その他法令に違反する行為を禁止します。"],
-                  ["第5条（アカウントの管理）", "ユーザーは自己の責任においてアカウントを管理するものとします。アカウントの不正使用による損害について、運営者は責任を負いません。"],
-                  ["第6条（サービスの変更・終了）", "運営者は事前の通知なく本サービスの内容を変更、または提供を終了することがあります。これによりユーザーに生じた損害について、運営者は責任を負いません。"],
-                  ["第7条（規約の変更）", "運営者は必要に応じて本規約を変更できるものとします。変更後の規約はサービス上に掲載した時点で効力を生じます。"],
+                  ["第4条（食品・ギフト品の取引について）", "食品・飲料・お中元・お歳暮等の食品類を出品する場合は、未開封かつ製造元のシールが intact な状態のものに限ります。賞味期限・消費期限は正確に記載してください。生もの・要冷蔵・要冷凍品の取引はユーザー自身の責任において行うものとし、配送中の品質劣化・食中毒等のトラブルについて運営者は一切の責任を負いません。食品の取引は自己責任でお願いします。"],
+                  ["第5条（禁止事項）", "偽りの情報による出品・詐欺的行為、他ユーザーへの嫌がらせ・誹謗中傷、違法物・危険物の出品、著作権を侵害するコンテンツの投稿、賞味期限切れ・消費期限切れ食品の出品、偽ブランド品・模倣品の出品、その他法令に違反する行為を禁止します。"],
+                  ["第6条（アカウントの管理）", "ユーザーは自己の責任においてアカウントを管理するものとします。アカウントの不正使用による損害について、運営者は責任を負いません。"],
+                  ["第7条（サービスの変更・終了）", "運営者は事前の通知なく本サービスの内容を変更、または提供を終了することがあります。これによりユーザーに生じた損害について、運営者は責任を負いません。"],
+                  ["第8条（規約の変更）", "運営者は必要に応じて本規約を変更できるものとします。変更後の規約はサービス上に掲載した時点で効力を生じます。"],
                 ].map(([title, body]) => (
                   <div key={title} style={{ marginBottom: 18 }}>
                     <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 5 }}>{title}</p>

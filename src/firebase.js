@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAVvVXYMT7oaDIXUfQk1of0Jnj-RnAWUHU",
@@ -18,3 +19,5 @@ export const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: "select_account" });
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const messaging = getMessaging(app);
+export { getToken, onMessage };
