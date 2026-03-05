@@ -222,6 +222,8 @@ export default function SwapApp() {
   const [reportReason, setReportReason] = useState("");
   const [reports, setReports] = useState([]);
   const [adminTab, setAdminTab] = useState("dashboard");
+  const [applications, setApplications] = useState([]); // 申し込み一覧
+  const [cancelCount, setCancelCount] = useState(0); // キャンセル回数
   const ADMIN_EMAIL = "satoki4438@gmail.com";
   const isAdmin = user?.email === ADMIN_EMAIL;
 
@@ -239,6 +241,61 @@ export default function SwapApp() {
   const [boostExpiry, setBoostExpiry] = useState(null); // 上位表示期限
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
+
+  const submitApplication = (item, myItem, message) => {
+    if (!myItem) { showToast("⚠️ 提供するアイテムを選んでください"); return; }
+    const now = new Date();
+    const deadline = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24時間
+    const app = {
+      id: Date.now(),
+      itemId: item.id, itemTitle: item.title, itemOwner: item.owner, itemImage: item.image,
+      myItemId: myItem.id, myItemTitle: myItem.title, myItemImage: myItem.image || "📦",
+      applicant: user?.name || "匿名", applicantUid: user?.uid,
+      message, status: "申し込み中",
+      deadline: deadline.toISOString(),
+      createdAt: now.toISOString(),
+    };
+    setApplications(prev => [...prev, app]);
+    setShowTradeModal(null);
+    showToast("✅ 申し込みました！24時間以内に返答があります");
+    setTimeout(() => setView("messages"), 800);
+  };
+
+  const respondToApplication = (appId, response) => {
+    if (response === "交渉する") {
+      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48時間
+      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "交渉中", negotiationDeadline: deadline.toISOString() } : a));
+      const app = applications.find(a => a.id === appId);
+      const newThread = {
+        id: `app_${appId}`, partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
+        partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
+        myItem: app?.itemTitle, myItemImage: app?.itemImage,
+        status: "交渉中", tradeStatus: "交渉中", unread: 1, lastMsg: app?.message || "交渉を開始しました", lastTime: "今",
+        messages: [
+          { id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true },
+          ...(app?.message ? [{ id: Date.now() + 1, from: "them", text: app.message, time: "今", read: false }] : []),
+        ],
+      };
+      setThreads(prev => [...prev, newThread]);
+      showToast("🤝 交渉を開始しました！チャットで詳細を決めましょう");
+    } else if (response === "保留") {
+      const holdCount = applications.filter(a => a.status === "保留中").length;
+      if (holdCount >= 3) { showToast("⚠️ 保留は最大3件までです"); return; }
+      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "保留中" } : a));
+      showToast("📋 保留にしました（最大3件・48時間）");
+    } else if (response === "ごめんなさい") {
+      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "お断り" } : a));
+      showToast("🙏 お断りしました。相手に通知が届きます");
+    }
+  };
+
+  const cancelApplication = (appId) => {
+    const newCount = cancelCount + 1;
+    setCancelCount(newCount);
+    setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "キャンセル" } : a));
+    if (newCount >= 3) showToast("⚠️ キャンセルが多いです。警告バッジが付く場合があります");
+    else showToast("キャンセルしました");
+  };
 
   const submitReport = async () => {
     if (!reportReason) { showToast("⚠️ 通報理由を選択してください"); return; }
@@ -889,6 +946,53 @@ export default function SwapApp() {
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#1a1208" }}>💬 メッセージ</h2>
               {totalUnread > 0 && <span style={{ background: "#ef4444", borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#fff" }}>{totalUnread}件未読</span>}
             </div>
+
+            {/* 申し込み受信ボックス */}
+            {applications.filter(a => a.status === "申し込み中" || a.status === "保留中").length > 0 && (
+              <div style={{ margin: "0 14px 12px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", letterSpacing: 1, marginBottom: 7 }}>📨 申し込み</p>
+                {applications.filter(a => a.status === "申し込み中" || a.status === "保留中").map(app => (
+                  <div key={app.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
+                      <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{app.applicant?.charAt(0)}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", gap: 5, alignItems: "center", marginBottom: 2 }}>
+                          <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208" }}>{app.applicant}</p>
+                          <span style={{ background: app.status === "保留中" ? "#fffbeb" : "#eff6ff", borderRadius: 20, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: app.status === "保留中" ? "#d97706" : "#3b82f6" }}>{app.status}</span>
+                        </div>
+                        <p style={{ fontSize: 11, color: "#8a7a6a" }}>{app.myItemImage} {app.myItemTitle} → {app.itemImage} {app.itemTitle}</p>
+                      </div>
+                    </div>
+                    {app.message && <p style={{ fontSize: 11, color: "#5a4a3a", background: "#f7f4ef", borderRadius: 9, padding: "8px 10px", marginBottom: 10 }}>「{app.message}」</p>}
+                    <div style={{ display: "flex", gap: 7 }}>
+                      <button onClick={() => respondToApplication(app.id, "交渉する")} className="bp" style={{ flex: 2, background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#1a1208", cursor: "pointer" }}>🤝 交渉する</button>
+                      <button onClick={() => respondToApplication(app.id, "保留")} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#8a7a6a", cursor: "pointer" }}>📋 保留</button>
+                      <button onClick={() => respondToApplication(app.id, "ごめんなさい")} className="bp" style={{ flex: 1, background: "#fef2f2", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#ef4444", cursor: "pointer" }}>🙏 ごめん</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* 自分の申し込み状況 */}
+            {applications.filter(a => a.applicantUid === user?.uid && a.status === "申し込み中").length > 0 && (
+              <div style={{ margin: "0 14px 12px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#8a7a6a", letterSpacing: 1, marginBottom: 7 }}>📤 申し込み中</p>
+                {applications.filter(a => a.applicantUid === user?.uid && a.status === "申し込み中").map(app => (
+                  <div key={app.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)", display: "flex", gap: 10, alignItems: "center" }}>
+                    <div style={{ fontSize: 24 }}>{app.itemImage}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontWeight: 700, fontSize: 12, color: "#1a1208", marginBottom: 2 }}>{app.itemTitle}</p>
+                      <p style={{ fontSize: 10, color: "#8a7a6a" }}>返答待ち（24時間以内）</p>
+                    </div>
+                    <button onClick={() => cancelApplication(app.id)} className="bp" style={{ background: "#fef2f2", border: "none", borderRadius: 9, padding: "7px 11px", fontSize: 11, fontWeight: 700, color: "#ef4444", cursor: "pointer", flexShrink: 0 }}>キャンセル</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* チャット一覧 */}
+            {threads.length > 0 && <p style={{ fontSize: 10, fontWeight: 700, color: "#8a7a6a", letterSpacing: 1, margin: "0 14px 7px" }}>💬 チャット</p>}
             {threads.map((thread, i) => (
               <div key={thread.id} className="ph au" style={{ background: "#fff", margin: "0 14px 8px", borderRadius: 14, padding: 13, display: "flex", gap: 11, alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animationDelay: `${i * 55}ms`, position: "relative" }} onClick={() => openChat(thread)}>
                 {thread.unread > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{thread.unread}</div>}
@@ -902,7 +1006,7 @@ export default function SwapApp() {
                     <span style={{ fontSize: 11 }}>{thread.myItemImage}</span>
                     <span style={{ fontSize: 10, color: "#8a7a6a" }}>⟳</span>
                     <span style={{ fontSize: 11 }}>{thread.partnerItemImage}</span>
-                    <span style={{ background: thread.status === "交換成立" ? "#dcfce7" : "#fef3c7", borderRadius: 20, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: thread.status === "交換成立" ? "#16a34a" : "#d97706" }}>{thread.status}</span>
+                    <span style={{ background: thread.status === "スワプる成立！" ? "#dcfce7" : "#fef3c7", borderRadius: 20, padding: "1px 7px", fontSize: 9, fontWeight: 700, color: thread.status === "スワプる成立！" ? "#16a34a" : "#d97706" }}>{thread.status}</span>
                   </div>
                   <p style={{ fontSize: 11, color: thread.unread > 0 ? "#1a1208" : "#8a7a6a", fontWeight: thread.unread > 0 ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{thread.lastMsg}</p>
                 </div>
@@ -1444,17 +1548,23 @@ export default function SwapApp() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowTradeModal(null)}>
           <div style={{ background: "#f0ede8", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "85vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#d4c4a8", borderRadius: 2, margin: "0 auto 15px" }} />
-            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: 12 }}>{showTradeModal.fromWant ? "🙋 リクエストに応じる" : "⟳ 交換を申し込む"}</h2>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: 4 }}>⟳ 交換を申し込む</h2>
+            <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 12 }}>出品者が24時間以内に返答します</p>
             <div style={{ background: "#fff", borderRadius: 12, padding: 11, marginBottom: 11, display: "flex", gap: 10, alignItems: "center" }}>
               <div style={{ width: 48, height: 48, background: "#f7f4ef", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.image}</div>
               <div>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", marginBottom: 2 }}>{showTradeModal.fromWant ? "欲しいリクエスト" : "相手のアイテム"}</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", marginBottom: 2 }}>相手のアイテム</p>
                 <p style={{ fontWeight: 600, fontSize: 13, color: "#1a1208" }}>{showTradeModal.title}</p>
                 <p style={{ fontSize: 10, color: "#8a7a6a" }}>{showTradeModal.owner}</p>
               </div>
             </div>
             <div style={{ textAlign: "center", fontSize: 18, color: "#d4a574", margin: "3px 0 9px" }}>⟳ あなたが提供</div>
-            {myItems.map(item => (
+            {myItems.length === 0 ? (
+              <div style={{ background: "#fff", borderRadius: 12, padding: 20, textAlign: "center", marginBottom: 11 }}>
+                <p style={{ fontSize: 13, color: "#8a7a6a", marginBottom: 8 }}>出品中のアイテムがありません</p>
+                <button onClick={() => { setShowTradeModal(null); setShowPostModal(true); }} className="bp" style={{ background: "#d4a574", border: "none", borderRadius: 20, padding: "8px 16px", fontSize: 12, fontWeight: 700, color: "#1a1208", cursor: "pointer" }}>+ 出品する</button>
+              </div>
+            ) : myItems.map(item => (
               <div key={item.id} onClick={() => setSelectedMyItem(item)} className="ph" style={{ background: "#fff", borderRadius: 12, padding: 11, marginBottom: 7, display: "flex", gap: 10, alignItems: "center", border: `2px solid ${selectedMyItem?.id === item.id ? "#d4a574" : "transparent"}` }}>
                 <div style={{ width: 44, height: 44, background: "#f7f4ef", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
                 <div style={{ flex: 1 }}>
@@ -1467,18 +1577,17 @@ export default function SwapApp() {
               </div>
             ))}
             <div style={{ marginBottom: 10 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 5 }}>メッセージ（任意）</p>
-              <textarea placeholder="一言添えるとマッチ率アップ！" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#1a1208", height: 60, resize: "none" }} />
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#5a4a3a", marginBottom: 5 }}>一言メッセージ（任意）</p>
+              <textarea id="tradeMsg" placeholder="一言添えるとマッチ率アップ！" style={{ width: "100%", background: "#f7f4ef", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#1a1208", height: 60, resize: "none" }} />
+            </div>
+            <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: 10, marginBottom: 12 }}>
+              <p style={{ fontSize: 11, color: "#92400e" }}>⏰ 出品者が24時間以内に返答しない場合は自動キャンセルされます</p>
             </div>
             <AffiliateCard ad={AFFILIATE_ADS[2]} compact />
-            <div style={{ display: "flex", gap: 7, marginTop: 6 }}>
+            <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
               <button onClick={() => setShowTradeModal(null)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 11, padding: 12, color: "#5a4a3a", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>キャンセル</button>
-              <button onClick={() => {
-                showToast("✅ 申請しました！チャットで交渉しましょう");
-                setShowTradeModal(null);
-                setTimeout(() => setView("messages"), 800);
-              }} className="bp" style={{ flex: 2, background: selectedMyItem ? "linear-gradient(135deg,#d4a574,#c4813a)" : "#e8dfd0", border: "none", borderRadius: 11, padding: 12, color: selectedMyItem ? "#1a1208" : "#b4a494", fontWeight: 700, fontSize: 13, cursor: selectedMyItem ? "pointer" : "not-allowed" }}>
-                申請してチャットへ →
+              <button onClick={() => submitApplication(showTradeModal, selectedMyItem, document.getElementById("tradeMsg")?.value || "")} className="bp" style={{ flex: 2, background: selectedMyItem ? "linear-gradient(135deg,#d4a574,#c4813a)" : "#e8dfd0", border: "none", borderRadius: 11, padding: 12, color: selectedMyItem ? "#1a1208" : "#b4a494", fontWeight: 700, fontSize: 13, cursor: selectedMyItem ? "pointer" : "not-allowed" }}>
+                申し込む →
               </button>
             </div>
           </div>
