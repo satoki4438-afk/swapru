@@ -1206,7 +1206,7 @@ export default function SwapApp() {
             <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 12 }}>あなたの出品物のキーワードを求めている人。自分でザッピングして確かめよう！</p>
             <div style={{ background: "#1a1208", borderRadius: 12, padding: 12, marginBottom: 12 }}>
               <p style={{ fontSize: 9, color: "#d4a574", fontWeight: 700, letterSpacing: 2, marginBottom: 6 }}>あなたの出品中</p>
-              <div style={{ display: "flex", gap: 7 }}>{myItems.map(item => <div key={item.id} style={{ background: "rgba(255,255,255,.08)", borderRadius: 9, padding: "7px 10px", flex: 1, display: "flex", gap: 7, alignItems: "center" }}><span style={{ fontSize: 20, display:"flex", alignItems:"center" }}>{imgSafe(item.image, 24)}</span><p style={{ fontSize: 10, color: "#f0ede8", fontWeight: 600, lineHeight: 1.2 }}>{item.title}</p></div>)}</div>
+              <div style={{ display: "flex", gap: 7 }}>{myItems.map(item => <div key={item.id} style={{ background: "rgba(255,255,255,.08)", borderRadius: 9, padding: 6, display: "flex", alignItems: "center", justifyContent: "center", width: 48, height: 48, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 40)}</div>)}</div>
             </div>
             {matchedItems.map((item, i) => {
               const reasons = getMatchReasons(item, myItems);
@@ -1214,7 +1214,7 @@ export default function SwapApp() {
                 <div key={item.id} className="au" style={{ background: "#fff", borderRadius: 14, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animationDelay: `${i * 50}ms` }}>
                   <div style={{ background: "#fef9f0", padding: "8px 13px", borderBottom: "1px solid #f0ede8", display: "flex", gap: 5, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#c4813a" }}>🎯</span>
-                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#3d2b15" }}>{r.myImage?.startsWith?.("http") ? "📦" : r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#c4813a" }}>「{r.want}」</span></span>)}
+                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#3d2b15" }}>{r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#c4813a" }}>「{r.want}」</span></span>)}
                   </div>
                   <div style={{ padding: 12, display: "flex", gap: 10, cursor: "pointer" }} onClick={() => openDetail(item)}>
                     <div style={{ width: 62, height: 62, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
