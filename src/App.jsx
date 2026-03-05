@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { auth, provider, db, storage, messaging, getToken, onMessage } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────────────
@@ -242,49 +242,77 @@ export default function SwapApp() {
   const [legalModal, setLegalModal] = useState(null); // "terms" | "privacy" | "contact"
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  const submitApplication = (item, myItem, message) => {
+  const submitApplication = async (item, myItem, message) => {
     if (!myItem) { showToast("⚠️ 提供するアイテムを選んでください"); return; }
     const now = new Date();
-    const deadline = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24時間
+    const deadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     const app = {
-      id: Date.now(),
       itemId: item.id, itemTitle: item.title, itemOwner: item.owner, itemImage: item.image,
+      itemOwnerUid: item.ownerUid || "",
       myItemId: myItem.id, myItemTitle: myItem.title, myItemImage: myItem.image || "📦",
-      applicant: user?.name || "匿名", applicantUid: user?.uid,
+      applicant: user?.name || "匿名", applicantUid: user?.uid, applicantAvatar: user?.avatar || "U",
       message, status: "申し込み中",
       deadline: deadline.toISOString(),
-      createdAt: now.toISOString(),
+      createdAt: serverTimestamp(),
     };
-    setApplications(prev => [...prev, app]);
+    try {
+      const docRef = await addDoc(collection(db, "applications"), app);
+      setApplications(prev => [...prev, { ...app, id: docRef.id, createdAt: now.toISOString() }]);
+    } catch(e) {
+      setApplications(prev => [...prev, { ...app, id: Date.now(), createdAt: now.toISOString() }]);
+    }
     setShowTradeModal(null);
     showToast("✅ 申し込みました！24時間以内に返答があります");
     setTimeout(() => setView("messages"), 800);
   };
 
-  const respondToApplication = (appId, response) => {
+  const respondToApplication = async (appId, response) => {
     if (response === "交渉する") {
-      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48時間
+      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
       setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "交渉中", negotiationDeadline: deadline.toISOString() } : a));
       const app = applications.find(a => a.id === appId);
-      const newThread = {
-        id: `app_${appId}`, partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
-        partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
-        myItem: app?.itemTitle, myItemImage: app?.itemImage,
-        status: "交渉中", tradeStatus: "交渉中", unread: 1, lastMsg: app?.message || "交渉を開始しました", lastTime: "今",
-        messages: [
-          { id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true },
-          ...(app?.message ? [{ id: Date.now() + 1, from: "them", text: app.message, time: "今", read: false }] : []),
-        ],
-      };
-      setThreads(prev => [...prev, newThread]);
+      // Firestoreにチャット作成
+      try {
+        const chatData = {
+          applicantUid: app?.applicantUid, applicantName: app?.applicant, applicantAvatar: app?.applicantAvatar,
+          applicantItemTitle: app?.myItemTitle, applicantItemImage: app?.myItemImage,
+          ownerUid: user.uid, ownerName: user.name, ownerAvatar: user.avatar,
+          ownerItemTitle: app?.itemTitle, ownerItemImage: app?.itemImage,
+          tradeStatus: "交渉中", lastMsg: "交渉が開始されました", updatedAt: serverTimestamp(),
+          messages: [], unreadCount: { [app?.applicantUid]: 1 }
+        };
+        const chatRef = await addDoc(collection(db, "chats"), chatData);
+        await updateDoc(doc(db, "applications", appId), { status: "交渉中" });
+        const newThread = {
+          id: chatRef.id, firestoreId: chatRef.id,
+          partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
+          partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
+          myItem: app?.itemTitle, myItemImage: app?.itemImage,
+          status: "交渉中", tradeStatus: "交渉中", unread: 0, lastMsg: "交渉が開始されました", lastTime: "今",
+          messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
+        };
+        setThreads(prev => [...prev, newThread]);
+      } catch(e) {
+        console.error(e);
+        const newThread = {
+          id: `app_${appId}`, partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
+          partnerItem: app?.myItemTitle, partnerItemImage: app?.myItemImage,
+          myItem: app?.itemTitle, myItemImage: app?.itemImage,
+          status: "交渉中", tradeStatus: "交渉中", unread: 1, lastMsg: app?.message || "交渉を開始しました", lastTime: "今",
+          messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
+        };
+        setThreads(prev => [...prev, newThread]);
+      }
       showToast("🤝 交渉を開始しました！チャットで詳細を決めましょう");
     } else if (response === "保留") {
       const holdCount = applications.filter(a => a.status === "保留中").length;
       if (holdCount >= 3) { showToast("⚠️ 保留は最大3件までです"); return; }
       setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "保留中" } : a));
+      try { await updateDoc(doc(db, "applications", appId), { status: "保留中" }); } catch(e) {}
       showToast("📋 保留にしました（最大3件・48時間）");
     } else if (response === "ごめんなさい") {
       setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "お断り" } : a));
+      try { await updateDoc(doc(db, "applications", appId), { status: "お断り" }); } catch(e) {}
       showToast("🙏 お断りしました。相手に通知が届きます");
     }
   };
@@ -413,9 +441,10 @@ export default function SwapApp() {
     return () => unsubscribe();
   }, [user]);
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!chatInput.trim() || !openThread) return;
-    const newMsg = { id: Date.now(), from: "me", text: chatInput.trim(), time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
+    const now = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    const newMsg = { id: Date.now(), from: "me", text: chatInput.trim(), time: now, read: true };
     const isFirstMsg = openThread.messages.filter(m => m.from === "me").length === 0;
     if (isFirstMsg) {
       setPendingFirstMsg(newMsg);
@@ -424,14 +453,29 @@ export default function SwapApp() {
       setChatInput("");
       return;
     }
-    setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: newMsg.time, unread: 0 } : t));
+    // ローカル即時反映
+    setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: now, unread: 0 } : t));
     setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
     setChatInput("");
-    setTimeout(() => {
-      const reply = { id: Date.now() + 1, from: "them", text: "なるほど！それは良さそうですね。もう少し詳しく聞かせてもらえますか？", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
-      setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
-      setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
-    }, 1200);
+    // Firestore保存
+    if (openThread.firestoreId) {
+      try {
+        await addDoc(collection(db, "chats", openThread.firestoreId, "messages"), {
+          from: user.uid, text: newMsg.text, createdAt: serverTimestamp(), read: false
+        });
+        await updateDoc(doc(db, "chats", openThread.firestoreId), {
+          lastMsg: newMsg.text, updatedAt: serverTimestamp()
+        });
+      } catch(e) { console.error("メッセージ保存失敗:", e); }
+    }
+    // モックの自動返信（Firestore未連携スレッドのみ）
+    if (!openThread.firestoreId) {
+      setTimeout(() => {
+        const reply = { id: Date.now() + 1, from: "them", text: "なるほど！それは良さそうですね。もう少し詳しく聞かせてもらえますか？", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
+        setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
+        setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
+      }, 1200);
+    }
   };
 
   const sendPendingMessage = () => {
@@ -530,6 +574,52 @@ export default function SwapApp() {
     });
     return () => unsub();
   }, []);
+
+  // チャットのリアルタイム連携
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "chats"), orderBy("updatedAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const chats = snap.docs
+        .map(d => ({ ...d.data(), firestoreId: d.id }))
+        .filter(c => c.ownerUid === user.uid || c.applicantUid === user.uid);
+      if (chats.length > 0) {
+        const mapped = chats.map(c => ({
+          id: c.firestoreId,
+          partner: c.ownerUid === user.uid ? c.applicantName : c.ownerName,
+          partnerAvatar: c.ownerUid === user.uid ? c.applicantAvatar : c.ownerAvatar,
+          partnerItem: c.ownerUid === user.uid ? c.applicantItemTitle : c.ownerItemTitle,
+          partnerItemImage: c.ownerUid === user.uid ? c.applicantItemImage : c.ownerItemImage,
+          myItem: c.ownerUid === user.uid ? c.ownerItemTitle : c.applicantItemTitle,
+          myItemImage: c.ownerUid === user.uid ? c.ownerItemImage : c.applicantItemImage,
+          status: c.tradeStatus || "交渉中",
+          tradeStatus: c.tradeStatus || "交渉中",
+          unread: c.unreadCount?.[user.uid] || 0,
+          lastMsg: c.lastMsg || "",
+          lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
+          messages: c.messages || [],
+        }));
+        setThreads(prev => {
+          const mockThreads = prev.filter(t => !t.firestoreId);
+          return [...mapped, ...mockThreads];
+        });
+      }
+    });
+    return () => unsub();
+  }, [user]);
+
+  // 申し込みのリアルタイム連携
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "applications"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const apps = snap.docs
+        .map(d => ({ ...d.data(), id: d.id }))
+        .filter(a => a.itemOwnerUid === user.uid || a.applicantUid === user.uid);
+      if (apps.length > 0) setApplications(apps);
+    });
+    return () => unsub();
+  }, [user]);
 
   // ── LANDING ──
   if (authState !== "app") return (
