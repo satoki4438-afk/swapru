@@ -1214,7 +1214,7 @@ export default function SwapApp() {
                 <div key={item.id} className="au" style={{ background: "#fff", borderRadius: 14, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animationDelay: `${i * 50}ms` }}>
                   <div style={{ background: "#fef9f0", padding: "8px 13px", borderBottom: "1px solid #f0ede8", display: "flex", gap: 5, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#c4813a" }}>🎯</span>
-                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#3d2b15" }}>{r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#c4813a" }}>「{r.want}」</span></span>)}
+                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#fff", border: "1px solid #e8dfd0", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#3d2b15" }}>{r.myImage?.startsWith?.("http") ? "📦" : r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#c4813a" }}>「{r.want}」</span></span>)}
                   </div>
                   <div style={{ padding: 12, display: "flex", gap: 10, cursor: "pointer" }} onClick={() => openDetail(item)}>
                     <div style={{ width: 62, height: 62, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : item.image}</div>
