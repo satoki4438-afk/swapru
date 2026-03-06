@@ -829,8 +829,8 @@ export default function SwapApp() {
         {/* Chat header */}
         <div style={{ background: "#1a1208", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 16px rgba(0,0,0,.3)" }}>
           <button onClick={() => setView("messages")} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
-          <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{thread.partnerAvatar}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>{thread.partnerAvatar}</div>
+          <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>
             <p style={{ color: "#f0ede8", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
             <p style={{ color: "#8a7a6a", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{thread.partnerItemImage} {thread.partnerItem}</p>
           </div>
@@ -1335,7 +1335,7 @@ export default function SwapApp() {
                 <button onClick={() => setMypageTab("settings")} className="bp" style={{ background: "rgba(255,255,255,.1)", border: "1px solid rgba(255,255,255,.15)", borderRadius: 9, padding: "7px 11px", color: "#d4a574", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>⚙ 設定</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 7 }}>
-                {[["2", "出品中"], ["1", "交換中"], ["5", "成立"], [totalUnread, "未読"]].map(([n, l]) => (
+                {[[myItems.filter(i => i.status === "出品中").length, "出品中"], [threads.filter(t => t.status === "交渉中").length, "交換中"], [threads.filter(t => t.tradeStatus === "完了").length, "成立"], [totalUnread, "未読"]].map(([n, l]) => (
                   <div key={l} style={{ background: "rgba(255,255,255,.08)", borderRadius: 10, padding: "8px 0", textAlign: "center" }}>
                     <p style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "未読" && Number(n) > 0 ? "#ef4444" : "#d4a574" }}>{n}</p>
                     <p style={{ fontSize: 9, color: "#b4a494" }}>{l}</p>
@@ -1675,7 +1675,7 @@ export default function SwapApp() {
                 </div>
 
                 {isAdmin && <button onClick={() => setView("admin")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#1a1208,#3d2b15)", border: "none", borderRadius: 12, padding: 12, color: "#d4a574", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 7 }}>🛡️ 管理画面</button>}
-                <button onClick={() => { setUser(null); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #e8dfd0", borderRadius: 12, padding: 12, color: "#8a7a6a", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
+                <button onClick={async () => { await signOut(auth); setUser(null); setMyItems([]); setThreads([]); setApplications([]); setLikedItems([]); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #e8dfd0", borderRadius: 12, padding: 12, color: "#8a7a6a", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
                 <button className="bp" style={{ width: "100%", background: "none", border: "1px solid #fecaca", borderRadius: 12, padding: 12, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>アカウントを削除する</button>
               </div>
             )}
