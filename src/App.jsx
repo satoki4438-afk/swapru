@@ -230,6 +230,7 @@ export default function SwapApp() {
 
   // Modals
   const [showPostModal, setShowPostModal] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState(null); // { message, onOk }
   const [postType, setPostType] = useState("offer");
   const [showTradeModal, setShowTradeModal] = useState(null);
   const [selectedMyItem, setSelectedMyItem] = useState(null);
@@ -1335,7 +1336,7 @@ export default function SwapApp() {
                     <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
                       <button onClick={() => { setEditingItem(item); setPostForm({ title: item.title, category: item.category, condition: item.condition, detail: "", wantItems: item.wantItems?.join("、"), image: item.image }); setPostType("offer"); setShowPostModal(true); }} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: "#5a4a3a", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>✏️ 編集</button>
                       <button onClick={() => toggleItemStatus(item)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: item.status === "非公開" ? "#16a34a" : "#d97706", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>{item.status === "非公開" ? "👁 公開する" : "🙈 非公開"}</button>
-                      <button onClick={() => { if (window.confirm(`「${item.title}」を削除しますか？`)) deleteMyItem(item); }} className="bp" style={{ width: 38, background: "#fef2f2", border: "none", borderRadius: 9, color: "#ef4444", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>🗑</button>
+                      <button onClick={() => setConfirmDialog({ message: `「${item.title}」を削除しますか？`, onOk: () => deleteMyItem(item) })} className="bp" style={{ width: 38, background: "#fef2f2", border: "none", borderRadius: 9, color: "#ef4444", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>🗑</button>
                     </div>
                     <button onClick={() => handleBoost(item.id)} className="bp" style={{ width: "100%", background: boostedItemId === item.id ? "linear-gradient(135deg,#fbbf24,#f59e0b)" : boostCredits > 0 ? "linear-gradient(135deg,#1a1208,#3d2b15)" : "#f0ede8", border: "none", borderRadius: 9, padding: "8px 0", color: boostedItemId === item.id ? "#1a1208" : boostCredits > 0 ? "#d4a574" : "#b4a494", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                       {boostedItemId === item.id ? "🚀 上位表示中（48h）" : boostCredits > 0 ? `🚀 上位表示する（権利 ${boostCredits}/2）` : "🚀 上位表示（シェア3回でGET）"}
@@ -1688,12 +1689,6 @@ export default function SwapApp() {
                     ))}
                   </div>
                 )}
-              </div>
-              {/* 絵文字アイコン選択 */}
-              <div style={{ display: "flex", gap: 7, overflowX: "auto", marginBottom: 13, paddingBottom: 3 }}>
-                {["📷","🎸","🎮","⛺","☕","🚲","📸","👜","🎵","🎥","📱","💻","⌚","🎒","🎹"].map(em => (
-                  <button key={em} onClick={() => setPostForm(f => ({ ...f, image: em }))} style={{ width: 38, height: 38, background: postForm.image === em ? "#1a1208" : "#f7f4ef", border: `2px solid ${postForm.image === em ? "#d4a574" : "transparent"}`, borderRadius: 9, fontSize: 20, cursor: "pointer", flexShrink: 0 }}>{em}</button>
-                ))}
               </div>
               {/* フォームフィールド */}
               {[["商品名・タイトル", "title", postType === "offer" ? "例: Canon AE-1 フィルムカメラ" : "例: フィルムカメラ全般"], ["詳細・説明", "detail", postType === "offer" ? "状態、付属品など..." : "希望条件など..."], [postType === "offer" ? "交換希望アイテム（カンマ区切り）" : "交換に出せるもの", "wantItems", postType === "offer" ? "例: ギター, ゲーム機" : "例: Nintendo Switch"]].map(([label, key, ph]) => (
@@ -2140,6 +2135,18 @@ export default function SwapApp() {
 
       {/* ── TOAST ── */}
       {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
+      {confirmDialog && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div style={{ background: "#fff", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1208", marginBottom: 6, textAlign: "center" }}>確認</p>
+            <p style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 20, textAlign: "center", lineHeight: 1.6 }}>{confirmDialog.message}</p>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#8a7a6a", cursor: "pointer" }}>キャンセル</button>
+              <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>削除する</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── BOTTOM NAV ── */}
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
