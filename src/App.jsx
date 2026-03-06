@@ -266,6 +266,7 @@ export default function SwapApp() {
 
   const submitApplication = async (item, myItem, message) => {
     if (!myItem) { showToast("⚠️ 提供するアイテムを選んでください"); return; }
+    if (item.ownerUid === user?.uid || item.owner === user?.name) { showToast("⚠️ 自分の出品には申し込めません"); return; }
     const now = new Date();
     const deadline = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     // Firestoreのpostsから最新のownerUidを取得
@@ -520,8 +521,10 @@ export default function SwapApp() {
         await addDoc(collection(db, "chats", openThread.firestoreId, "messages"), {
           from: user.uid, text: newMsg.text, createdAt: serverTimestamp(), read: false
         });
+        const partnerUid = openThread.partnerUid;
         await updateDoc(doc(db, "chats", openThread.firestoreId), {
-          lastMsg: newMsg.text, updatedAt: serverTimestamp()
+          lastMsg: newMsg.text, updatedAt: serverTimestamp(),
+          ...(partnerUid ? { [`unreadCount.${partnerUid}`]: (openThread.unread || 0) + 1 } : {})
         });
       } catch(e) { console.error("メッセージ保存失敗:", e); }
     }
@@ -560,6 +563,20 @@ export default function SwapApp() {
           [`unreadCount.${user.uid}`]: 0
         });
       } catch(e) {}
+      // メッセージリアルタイムリスナー
+      const q = query(collection(db, "chats", thread.firestoreId, "messages"), orderBy("createdAt", "asc"));
+      const unsub = onSnapshot(q, (snap) => {
+        const msgs = snap.docs.map(d => ({
+          id: d.id,
+          from: d.data().from === user.uid ? "me" : "them",
+          text: d.data().text,
+          time: d.data().createdAt ? new Date(d.data().createdAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "今",
+          read: d.data().read || false
+        }));
+        setOpenThread(prev => prev ? { ...prev, messages: msgs } : prev);
+      });
+      // チャットを閉じたらリスナー解除
+      setTimeout(() => unsub, 60 * 60 * 1000);
     }
   };
 
