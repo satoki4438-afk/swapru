@@ -417,7 +417,28 @@ export default function SwapApp() {
     setBoostCredits(c => c - 1);
     showToast("🚀 48時間の検索上位表示を開始しました！");
   };
-  const toggleLike = (id, e) => { e.stopPropagation(); setLikedItems(p => p.includes(id) ? p.filter(i => i !== id) : [...p, id]); };
+  const toggleLike = async (id, e) => {
+    e.stopPropagation();
+    const isLiked = likedItems.includes(id);
+    setLikedItems(p => isLiked ? p.filter(i => i !== id) : [...p, id]);
+    if (!user) return;
+    try {
+      if (isLiked) {
+        await deleteDoc(doc(db, "users", user.uid, "likes", String(id)));
+      } else {
+        const item = allItems.find(i => i.id == id) || allItems.find(i => String(i.id) === String(id));
+        await setDoc(doc(db, "users", user.uid, "likes", String(id)), { itemId: id, title: item?.title || "", image: item?.image || "📦", imageUrls: item?.imageUrls || [], savedAt: serverTimestamp() });
+      }
+    } catch(e) { console.log("like error:", e); }
+  };
+
+  // お気に入りのFirestore読み込み
+  const loadLikes = async (uid) => {
+    try {
+      const snap = await getDocs(collection(db, "users", uid, "likes"));
+      setLikedItems(snap.docs.map(d => d.data().itemId));
+    } catch(e) {}
+  };
   const openDetail = (item) => { if (!item) return; setSelectedItem(item); setView("detail"); setSelectedMyItem(null); window.scrollTo(0, 0); };
   const matchedItems = allItems.filter(item => getMatchReasons(item, myItems, profileForm.wantKeywords).length > 0);
   const totalUnread = threads.reduce((s, t) => s + t.unread, 0);
@@ -592,9 +613,7 @@ export default function SwapApp() {
       setAuthState("app");
       showToast("✅ Googleでログインしました");
       loadMyItems(result.user.uid);
-    } catch (e) {
-      setAuthState("landing");
-      showToast("❌ ログインに失敗しました");
+      loadLikes(result.user.uid);
     }
   };
 
@@ -613,6 +632,7 @@ export default function SwapApp() {
         setProfileForm(f => ({ ...f, name: u.name || f.name, location: f.location || "東京都" }));
         setAuthState("app");
         loadMyItems(firebaseUser.uid);
+        loadLikes(firebaseUser.uid);
       } else {
         setAuthState("landing");
       }
@@ -1049,7 +1069,7 @@ export default function SwapApp() {
         {view === "list" && (
           <div className="fi">
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#1a1208", borderBottom: "1px solid #2a1f10" }}>
-              {[["offer", "🔥 出品一覧"], ["want", "🙋 欲しいリスト"]].map(([tab, label]) => (
+              {[["offer", "🔥 出品一覧"]].map(([tab, label]) => (
                 <button key={tab} onClick={() => setListTab(tab)} className="bp" style={{ background: "none", border: "none", padding: "11px 0", fontWeight: 700, fontSize: 13, color: listTab === tab ? "#d4a574" : "#6a5a4a", cursor: "pointer", borderBottom: listTab === tab ? "2px solid #d4a574" : "2px solid transparent" }}>{label}</button>
               ))}
             </div>
@@ -1269,8 +1289,8 @@ export default function SwapApp() {
             </div>
 
             {/* Tab bar */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "#fff", borderBottom: "1px solid #e8dfd0" }}>
-              {[["listings", "📦 出品管理"], ["history", "🔄 取引履歴"], ["settings", "⚙ 設定"]].map(([tab, label]) => (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", background: "#fff", borderBottom: "1px solid #e8dfd0" }}>
+              {[["listings", "📦 出品"], ["favorites", "❤️ お気に入り"], ["history", "🔄 履歴"], ["settings", "⚙ 設定"]].map(([tab, label]) => (
                 <button key={tab} onClick={() => setMypageTab(tab)} className="bp" style={{ background: "none", border: "none", padding: "11px 0", fontWeight: 700, fontSize: 12, color: mypageTab === tab ? "#c4813a" : "#8a7a6a", cursor: "pointer", borderBottom: mypageTab === tab ? "2px solid #c4813a" : "2px solid transparent" }}>{label}</button>
               ))}
             </div>
@@ -1324,6 +1344,34 @@ export default function SwapApp() {
                   <p style={{ fontSize: 10, color: "#8a7a6a", fontWeight: 600, letterSpacing: 1, marginBottom: 7 }}>PR · おすすめ</p>
                   {AFFILIATE_ADS.map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}
                 </div>
+              </div>
+            )}
+
+            {/* ── お気に入りタブ ── */}
+            {mypageTab === "favorites" && (
+              <div style={{ padding: 14, width: "100%" }}>
+                {likedItems.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 0", color: "#8a7a6a" }}>
+                    <div style={{ fontSize: 44, marginBottom: 10 }}>🤍</div>
+                    <p style={{ fontWeight: 600 }}>お気に入りはまだありません</p>
+                    <p style={{ fontSize: 12, marginTop: 4 }}>気になる出品にハートを押してみよう！</p>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {allItems.filter(item => likedItems.includes(item.id) || likedItems.includes(String(item.id))).map(item => (
+                      <div key={item.id} onClick={() => openDetail(item)} className="ph" style={{ background: "#fff", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
+                        <div style={{ height: 90, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                          {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
+                          <button onClick={e => toggleLike(item.id, e)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(255,255,255,.9)", border: "none", borderRadius: "50%", width: 26, height: 26, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>❤️</button>
+                        </div>
+                        <div style={{ padding: "8px 9px 10px" }}>
+                          <p style={{ fontSize: 11, fontWeight: 600, color: "#1a1208", lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
+                          <p style={{ fontSize: 9, color: "#c4813a", fontWeight: 700 }}>⟳ {item.wantItems?.[0]} など</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1587,7 +1635,7 @@ export default function SwapApp() {
             <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: editingItem ? 14 : 3 }}>{editingItem ? "✏️ 出品を編集" : "新規投稿"}</h2>
             {!editingItem && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 16 }}>
-                {[["offer", "🔥 出品する", "持っているものを交換に出す"], ["want", "🙋 欲しいを投稿", "これと交換してほしいとリクエスト"]].map(([type, ttl, desc]) => (
+                {[["offer", "🔥 出品する", "持っているものを交換に出す"]].map(([type, ttl, desc]) => (
                   <button key={type} onClick={() => setPostType(type)} className="bp" style={{ background: postType === type ? "#1a1208" : "#fff", border: `2px solid ${postType === type ? "#d4a574" : "#e8dfd0"}`, borderRadius: 12, padding: 12, cursor: "pointer", textAlign: "left" }}>
                     <p style={{ fontSize: 12, fontWeight: 700, color: postType === type ? "#d4a574" : "#1a1208", marginBottom: 2 }}>{ttl}</p>
                     <p style={{ fontSize: 9, color: postType === type ? "#8a7a6a" : "#9a8a7a", lineHeight: 1.4 }}>{desc}</p>
