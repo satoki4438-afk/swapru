@@ -1101,7 +1101,7 @@ export default function SwapApp() {
                 <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                {allItems.slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
+                {allItems.filter(item => item.ownerUid !== user?.uid && item.owner !== user?.name).slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
               </div>
             </div>
             <div style={{ padding: "12px 14px 0" }}>{AFFILIATE_ADS.slice(1).map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}</div>
