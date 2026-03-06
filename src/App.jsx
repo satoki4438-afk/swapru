@@ -236,9 +236,6 @@ export default function SwapApp() {
   const [showTradeModal, setShowTradeModal] = useState(null);
   const [selectedMyItem, setSelectedMyItem] = useState(null);
   const [editingItem, setEditingItem] = useState(null);
-  const [showAdModal, setShowAdModal] = useState(false);
-  const [adCountdown, setAdCountdown] = useState(10);
-  const [pendingFirstMsg, setPendingFirstMsg] = useState(null);
   const [showReportModal, setShowReportModal] = useState(null); // item to report
   const [reportReason, setReportReason] = useState("");
   const [reports, setReports] = useState([]);
@@ -293,8 +290,6 @@ export default function SwapApp() {
 
   const respondToApplication = async (appId, response) => {
     if (response === "交渉する") {
-      const deadline = new Date(Date.now() + 48 * 60 * 60 * 1000);
-      setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "交渉中", negotiationDeadline: deadline.toISOString() } : a));
       const app = applications.find(a => a.id === appId);
       // 画像URLの場合は絵文字に置き換え
       const safeItemImage = app?.itemImage?.startsWith("http") ? "📦" : (app?.itemImage || "📦");
@@ -312,7 +307,7 @@ export default function SwapApp() {
         await updateDoc(doc(db, "applications", appId), { status: "交渉中" });
         const newThread = {
           id: chatRef.id, firestoreId: chatRef.id,
-          partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
+          partner: app?.applicant, partnerAvatar: app?.applicantAvatar || app?.applicant?.charAt(0) || "U",
           partnerItem: app?.myItemTitle, partnerItemImage: safeMyItemImage,
           myItem: app?.itemTitle, myItemImage: safeItemImage,
           status: "交渉中", tradeStatus: "交渉中", unread: 0, lastMsg: "交渉が開始されました", lastTime: "今",
@@ -468,12 +463,7 @@ export default function SwapApp() {
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [openThread]);
 
   // 広告カウントダウン
-  useEffect(() => {
-    if (!showAdModal) return;
-    if (adCountdown <= 0) { sendPendingMessage(); return; }
-    const timer = setTimeout(() => setAdCountdown(c => c - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [showAdModal, adCountdown]);
+
 
   // FCM通知セットアップ
   useEffect(() => {
@@ -522,26 +512,7 @@ export default function SwapApp() {
     }
   };
 
-  const sendPendingMessage = async () => {
-    if (!pendingFirstMsg || !openThread) return;
-    const newMsg = pendingFirstMsg;
-    setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: newMsg.time, unread: 0 } : t));
-    setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
-    setPendingFirstMsg(null);
-    setShowAdModal(false);
-    if (openThread.firestoreId) {
-      try {
-        await addDoc(collection(db, "chats", openThread.firestoreId, "messages"), {
-          from: user.uid, text: newMsg.text, createdAt: serverTimestamp(), read: false
-        });
-        const partnerUid = openThread.partnerUid;
-        await updateDoc(doc(db, "chats", openThread.firestoreId), {
-          lastMsg: newMsg.text, updatedAt: serverTimestamp(),
-          ...(partnerUid ? { [`unreadCount.${partnerUid}`]: 1 } : {})
-        });
-      } catch(e) { console.error("メッセージ保存失敗:", e); }
-    }
-  };
+
 
   const openChat = async (thread) => {
     setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, unread: 0 } : t));
@@ -567,7 +538,7 @@ export default function SwapApp() {
         setOpenThread(prev => prev ? { ...prev, messages: msgs } : prev);
       });
       // チャットを閉じたらリスナー解除
-      setTimeout(() => unsub, 60 * 60 * 1000);
+      window._chatUnsub = unsub;
     }
   };
 
@@ -713,7 +684,11 @@ export default function SwapApp() {
       const chats = snap.docs
         .map(d => ({ ...d.data(), firestoreId: d.id }))
         .filter(c => c.ownerUid === user.uid || c.applicantUid === user.uid);
-      const mapped = chats.map(c => ({
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const mapped = chats.filter(c => {
+        if (c.tradeStatus === "完了" && c.updatedAt?.toDate?.() < thirtyDaysAgo) return false;
+        return true;
+      }).map(c => ({
         id: c.firestoreId,
         firestoreId: c.firestoreId,
         partner: c.ownerUid === user.uid ? c.applicantName : c.ownerName,
@@ -730,26 +705,23 @@ export default function SwapApp() {
         lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
         messages: c.messages || [],
       }));
-      setThreads(mapped);
+      setThreads(mapped.sort((a, b) => (b.lastTime || "").localeCompare(a.lastTime || "")));
     });
     return () => unsub();
   }, [user]);
 
-  // 申し込みのリアルタイム連携
+  // 申し込みのリアルタイム連携（受信・送信両方）
   useEffect(() => {
     if (!user) return;
-    const q1 = query(collection(db, "applications"), orderBy("createdAt", "desc"));
-    const unsub = onSnapshot(q1, (snap) => {
+    const qReceived = query(collection(db, "applications"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(qReceived, (snap) => {
       const apps = snap.docs
         .map(d => ({ ...d.data(), id: d.id }))
         .filter(a =>
-          a.applicantUid === user.uid ||
-          a.itemOwnerUid === user.uid ||
-          a.itemOwner === user.name // 名前でもマッチ（ownerUidがない場合の保険）
+          (a.itemOwnerUid === user.uid || a.applicantUid === user.uid) &&
+          a.status !== "キャンセル"
         );
-      if (apps.length > 0) setApplications(apps);
-    }, (err) => {
-      console.log("applications読み込みエラー:", err);
+      setApplications(apps);
     });
     return () => unsub();
   }, [user]);
@@ -833,7 +805,7 @@ export default function SwapApp() {
 
         {/* Chat header */}
         <div style={{ background: "#1a1208", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 16px rgba(0,0,0,.3)" }}>
-          <button onClick={() => setView("messages")} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
+          <button onClick={() => { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
           <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>{thread.partnerAvatar}</div>
           <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>
             <p style={{ color: "#f0ede8", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
@@ -1913,33 +1885,6 @@ export default function SwapApp() {
 
       {/* ── TRADE MODAL ── */}
       {/* 交渉開始広告モーダル */}
-      {showAdModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.85)", zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 390, overflow: "hidden", animation: "up .3s ease" }}>
-            <div style={{ background: "#1a1208", padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <p style={{ color: "#8a7a6a", fontSize: 11 }}>📢 スポンサー</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <p style={{ color: "#d4a574", fontSize: 12, fontWeight: 700 }}>{adCountdown}秒</p>
-                {adCountdown <= 0 && <button onClick={sendPendingMessage} style={{ background: "#d4a574", border: "none", borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 700, color: "#1a1208", cursor: "pointer" }}>スキップ ✕</button>}
-              </div>
-            </div>
-            <div style={{ padding: 20 }}>
-              <div style={{ background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 14, padding: 20, marginBottom: 14, textAlign: "center" }}>
-                <p style={{ fontSize: 36, marginBottom: 8 }}>📦</p>
-                <p style={{ fontSize: 15, fontWeight: 700, color: "#1a1208", marginBottom: 4 }}>らくらくメルカリ便</p>
-                <p style={{ fontSize: 12, color: "#5a4a3a", marginBottom: 12, lineHeight: 1.5 }}>交換後の発送に便利！全国一律料金で匿名配送。ローソン・ファミマで簡単発送。</p>
-                <a href="https://www.mercari.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: 20, padding: "8px 20px", fontSize: 12, fontWeight: 700, color: "#1a1208", textDecoration: "none" }}>詳しく見る →</a>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ display: "flex", gap: 4, justifyContent: "center", marginBottom: 8 }}>
-                  {[...Array(10)].map((_, i) => <div key={i} style={{ width: 20, height: 4, borderRadius: 2, background: i < (10 - adCountdown) ? "#d4a574" : "#e8dfd0" }} />)}
-                </div>
-                <p style={{ fontSize: 10, color: "#8a7a6a" }}>{adCountdown > 0 ? `${adCountdown}秒後にスキップできます` : "準備完了！"}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showTradeModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowTradeModal(null)}>
