@@ -574,6 +574,32 @@ export default function SwapApp() {
     setLoadingItems(false);
   };
 
+  const saveProfile = async () => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, "users", user.uid, "profile", "data"), {
+        name: profileForm.name,
+        bio: profileForm.bio,
+        location: profileForm.location,
+        locationPrivate: profileForm.locationPrivate,
+        wantKeywords: profileForm.wantKeywords,
+        preferredCategories: profileForm.preferredCategories,
+        updatedAt: serverTimestamp()
+      });
+      showToast("✅ プロフィールを保存しました");
+    } catch(e) { showToast("❌ 保存に失敗しました"); }
+  };
+
+  const loadProfile = async (uid) => {
+    try {
+      const snap = await getDocs(collection(db, "users", uid, "profile"));
+      if (!snap.empty) {
+        const data = snap.docs[0].data();
+        setProfileForm(f => ({ ...f, ...data, wantKeywords: data.wantKeywords || ["", "", ""] }));
+      }
+    } catch(e) {}
+  };
+
   const deleteMyItem = async (item) => {
     try {
       if (item.firestoreId && user) {
@@ -615,6 +641,7 @@ export default function SwapApp() {
       showToast("✅ Googleでログインしました");
       loadMyItems(result.user.uid);
       loadLikes(result.user.uid);
+      loadProfile(result.user.uid);
     } catch (e) {
       setAuthState("landing");
       showToast("❌ ログインに失敗しました");
@@ -637,6 +664,7 @@ export default function SwapApp() {
         setAuthState("app");
         loadMyItems(firebaseUser.uid);
         loadLikes(firebaseUser.uid);
+        loadProfile(firebaseUser.uid);
       } else {
         setAuthState("landing");
       }
@@ -1531,7 +1559,7 @@ export default function SwapApp() {
                       <p style={{ fontSize: 11, color: "#8a7a6a" }}>エリアを非公開にする</p>
                     </div>
                   </div>
-                  <button onClick={() => showToast("✅ プロフィールを保存しました")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 11, padding: 12, color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>保存する</button>
+                  <button onClick={saveProfile} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 11, padding: 12, color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>保存する</button>
                 </div>
 
                 {/* 欲しいもの設定 */}
