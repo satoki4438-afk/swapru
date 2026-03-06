@@ -614,6 +614,9 @@ export default function SwapApp() {
       showToast("✅ Googleでログインしました");
       loadMyItems(result.user.uid);
       loadLikes(result.user.uid);
+    } catch (e) {
+      setAuthState("landing");
+      showToast("❌ ログインに失敗しました");
     }
   };
 
