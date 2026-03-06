@@ -503,14 +503,6 @@ export default function SwapApp() {
     if (!chatInput.trim() || !openThread) return;
     const now = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
     const newMsg = { id: Date.now(), from: "me", text: chatInput.trim(), time: now, read: true };
-    const isFirstMsg = openThread.messages.filter(m => m.from === "me").length === 0;
-    if (isFirstMsg) {
-      setPendingFirstMsg(newMsg);
-      setShowAdModal(true);
-      setAdCountdown(10);
-      setChatInput("");
-      return;
-    }
     // ローカル即時反映
     setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: now, unread: 0 } : t));
     setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
@@ -528,28 +520,27 @@ export default function SwapApp() {
         });
       } catch(e) { console.error("メッセージ保存失敗:", e); }
     }
-    // モックの自動返信（Firestore未連携スレッドのみ）
-    if (!openThread.firestoreId) {
-      setTimeout(() => {
-        const reply = { id: Date.now() + 1, from: "them", text: "なるほど！それは良さそうですね。もう少し詳しく聞かせてもらえますか？", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
-        setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
-        setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
-      }, 1200);
-    }
   };
 
-  const sendPendingMessage = () => {
+  const sendPendingMessage = async () => {
     if (!pendingFirstMsg || !openThread) return;
     const newMsg = pendingFirstMsg;
     setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg], lastMsg: newMsg.text, lastTime: newMsg.time, unread: 0 } : t));
     setOpenThread(prev => ({ ...prev, messages: [...prev.messages, newMsg] }));
     setPendingFirstMsg(null);
     setShowAdModal(false);
-    setTimeout(() => {
-      const reply = { id: Date.now() + 1, from: "them", text: "はじめまして！交換に興味を持っていただきありがとうございます😊", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), read: true };
-      setThreads(prev => prev.map(t => t.id === openThread.id ? { ...t, messages: [...t.messages, newMsg, reply], lastMsg: reply.text, lastTime: reply.time } : t));
-      setOpenThread(prev => prev ? { ...prev, messages: [...prev.messages, reply] } : prev);
-    }, 1200);
+    if (openThread.firestoreId) {
+      try {
+        await addDoc(collection(db, "chats", openThread.firestoreId, "messages"), {
+          from: user.uid, text: newMsg.text, createdAt: serverTimestamp(), read: false
+        });
+        const partnerUid = openThread.partnerUid;
+        await updateDoc(doc(db, "chats", openThread.firestoreId), {
+          lastMsg: newMsg.text, updatedAt: serverTimestamp(),
+          ...(partnerUid ? { [`unreadCount.${partnerUid}`]: 1 } : {})
+        });
+      } catch(e) { console.error("メッセージ保存失敗:", e); }
+    }
   };
 
   const openChat = async (thread) => {
