@@ -705,27 +705,24 @@ export default function SwapApp() {
       const chats = snap.docs
         .map(d => ({ ...d.data(), firestoreId: d.id }))
         .filter(c => c.ownerUid === user.uid || c.applicantUid === user.uid);
-      if (chats.length > 0) {
-        const mapped = chats.map(c => ({
-          id: c.firestoreId,
-          partner: c.ownerUid === user.uid ? c.applicantName : c.ownerName,
-          partnerAvatar: c.ownerUid === user.uid ? c.applicantAvatar : c.ownerAvatar,
-          partnerItem: c.ownerUid === user.uid ? c.applicantItemTitle : c.ownerItemTitle,
-          partnerItemImage: c.ownerUid === user.uid ? c.applicantItemImage : c.ownerItemImage,
-          myItem: c.ownerUid === user.uid ? c.ownerItemTitle : c.applicantItemTitle,
-          myItemImage: c.ownerUid === user.uid ? c.ownerItemImage : c.applicantItemImage,
-          status: c.tradeStatus || "交渉中",
-          tradeStatus: c.tradeStatus || "交渉中",
-          unread: c.unreadCount?.[user.uid] || 0,
-          lastMsg: c.lastMsg || "",
-          lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
-          messages: c.messages || [],
-        }));
-        setThreads(prev => {
-          const mockThreads = prev.filter(t => !t.firestoreId);
-          return [...mapped, ...mockThreads];
-        });
-      }
+      const mapped = chats.map(c => ({
+        id: c.firestoreId,
+        firestoreId: c.firestoreId,
+        partner: c.ownerUid === user.uid ? c.applicantName : c.ownerName,
+        partnerAvatar: c.ownerUid === user.uid ? c.applicantAvatar : c.ownerAvatar,
+        partnerUid: c.ownerUid === user.uid ? c.applicantUid : c.ownerUid,
+        partnerItem: c.ownerUid === user.uid ? c.applicantItemTitle : c.ownerItemTitle,
+        partnerItemImage: (() => { const img = c.ownerUid === user.uid ? c.applicantItemImage : c.ownerItemImage; return img?.startsWith?.("http") ? "📦" : (img || "📦"); })(),
+        myItem: c.ownerUid === user.uid ? c.ownerItemTitle : c.applicantItemTitle,
+        myItemImage: (() => { const img = c.ownerUid === user.uid ? c.ownerItemImage : c.applicantItemImage; return img?.startsWith?.("http") ? "📦" : (img || "📦"); })(),
+        status: c.tradeStatus || "交渉中",
+        tradeStatus: c.tradeStatus || "交渉中",
+        unread: c.unreadCount?.[user.uid] || 0,
+        lastMsg: c.lastMsg || "",
+        lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
+        messages: c.messages || [],
+      }));
+      setThreads(mapped);
     });
     return () => unsub();
   }, [user]);
