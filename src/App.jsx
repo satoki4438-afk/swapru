@@ -217,6 +217,7 @@ export default function SwapApp() {
   // Data
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedOwner, setSelectedOwner] = useState(null);
+  const [ownerReviews, setOwnerReviews] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("すべて");
   const [searchQuery, setSearchQuery] = useState("");
   const [likedItems, setLikedItems] = useState([]);
@@ -681,7 +682,7 @@ export default function SwapApp() {
         seedInitialData();
         return;
       }
-      const items = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
+      const items = snap.docs.map(d => ({ ...d.data(), firestoreId: d.id })).filter(i => i.ownerUid !== "seed");
       setAllItems(items);
     }, (err) => {
       console.log("posts読み込みエラー:", err);
@@ -924,7 +925,20 @@ export default function SwapApp() {
               ))}
             </div>
             <textarea placeholder="コメントを入力（任意）" value={thread.reviewComment || ""} onChange={e => setOpenThread(prev => ({ ...prev, reviewComment: e.target.value }))} style={{ width: "100%", background: "#fff", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 11px", fontSize: 12, color: "#1a1208", resize: "none", height: 56, marginBottom: 7 }} />
-            <button onClick={() => { if (!thread.reviewScore) { showToast("⭐ 星をつけてください"); return; } updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
+            <button onClick={async () => { 
+              if (!thread.reviewScore) { showToast("⭐ 星をつけてください"); return; }
+              try {
+                await addDoc(collection(db, "users", thread.partnerUid || thread.partner, "reviews"), {
+                  fromUid: user?.uid,
+                  fromName: user?.name,
+                  rating: thread.reviewScore,
+                  comment: thread.reviewComment || "",
+                  itemTitle: thread.partnerItem || "",
+                  createdAt: serverTimestamp()
+                });
+              } catch(e) { console.log("review save error:", e); }
+              updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`);
+            }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
           </div>
         )}
         {ts === "完了" && (
@@ -1160,7 +1174,17 @@ export default function SwapApp() {
                   <p style={{ fontSize: 9, color: "#8a7a6a", fontWeight: 600, letterSpacing: 1, marginBottom: 5 }}>PR · このカテゴリのおすすめ</p>
                   {getAdsForCategory(selectedItem.category).slice(0, 1).map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}
                 </div>
-                <div onClick={() => setSelectedOwner({ name: selectedItem.owner, avatar: selectedItem.ownerAvatar, location: selectedItem.location, uid: selectedItem.ownerUid })} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer", background: "#f7f4ef", borderRadius: 12, padding: "9px 12px" }}>
+                <div onClick={async () => {
+                  const owner = { name: selectedItem.owner, avatar: selectedItem.ownerAvatar, location: selectedItem.location, uid: selectedItem.ownerUid };
+                  setSelectedOwner(owner);
+                  setOwnerReviews([]);
+                  if (owner.uid && owner.uid !== "seed") {
+                    try {
+                      const snap = await getDocs(query(collection(db, "users", owner.uid, "reviews"), orderBy("createdAt", "desc")));
+                      setOwnerReviews(snap.docs.map(d => d.data()));
+                    } catch(e) {}
+                  }
+                }} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer", background: "#f7f4ef", borderRadius: 12, padding: "9px 12px" }}>
                   <div style={{ width: 34, height: 34, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 12 }}>{selectedItem.ownerAvatar}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "#1a1208" }}>{selectedItem.owner}</p>
@@ -1864,20 +1888,18 @@ export default function SwapApp() {
 
               {/* レビュー */}
               <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208", margin: "18px 0 10px" }}>⭐ レビュー</p>
-              {[
-                { name: "guitar_lover", rating: 5, comment: "迅速に対応していただきありがとうございました！商品も説明通りで満足です。", date: "2週間前" },
-                { name: "camera_fan", rating: 5, comment: "丁寧な梱包で助かりました。またよろしくお願いします！", date: "1ヶ月前" },
-              ].map((review, i) => (
+              {ownerReviews.length === 0 ? (
+                <p style={{ fontSize: 12, color: "#8a7a6a", textAlign: "center", padding: "12px 0" }}>まだレビューはありません</p>
+              ) : ownerReviews.map((review, i) => (
                 <div key={i} style={{ background: "#fff", borderRadius: 12, padding: 13, marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                    <div style={{ width: 28, height: 28, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 10 }}>{review.name.charAt(0).toUpperCase()}</div>
+                    <div style={{ width: 28, height: 28, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 10 }}>{review.fromName?.charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: 11, fontWeight: 600, color: "#1a1208" }}>{review.name}</p>
+                      <p style={{ fontSize: 11, fontWeight: 600, color: "#1a1208" }}>{review.fromName}</p>
                       <p style={{ fontSize: 10, color: "#d4a574" }}>{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
                     </div>
-                    <p style={{ fontSize: 10, color: "#8a7a6a" }}>{review.date}</p>
                   </div>
-                  <p style={{ fontSize: 11, color: "#5a4a3a", lineHeight: 1.6 }}>{review.comment}</p>
+                  {review.comment && <p style={{ fontSize: 11, color: "#5a4a3a", lineHeight: 1.6 }}>{review.comment}</p>}
                 </div>
               ))}
             </div>
