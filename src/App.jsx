@@ -1073,7 +1073,7 @@ export default function SwapApp() {
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#d4c4a8", marginBottom: 12 }}>
-              {[["12.4K", "出品数"], ["5.2K", "欲しいリスト"], ["¥0", "手数料"]].map(([n, l]) => (
+              {[[`${allItems.length}`, "出品数"], [`${likedItems.length}`, "お気に入り"], ["¥0", "手数料"]].map(([n, l]) => (
                 <div key={l} style={{ background: "#f7f4ef", padding: "11px 0", textAlign: "center" }}>
                   <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#1a1208" }}>{n}</div>
                   <div style={{ fontSize: 9, color: "#8a7a6a", marginTop: 1 }}>{l}</div>
