@@ -1941,7 +1941,7 @@ export default function SwapApp() {
             <h2 style={{ fontSize: 17, fontWeight: 800, color: "#1a1208", marginBottom: 4 }}>⟳ 交換を申し込む</h2>
             <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 12 }}>出品者が24時間以内に返答します</p>
             <div style={{ background: "#fff", borderRadius: 12, padding: 11, marginBottom: 11, display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 48, height: 48, background: "#f7f4ef", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.image}</div>
+              <div style={{ width: 48, height: 48, background: "#f7f4ef", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.imageUrls?.[0] ? <img src={showTradeModal.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(showTradeModal.image, 48)}</div>
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#c4813a", marginBottom: 2 }}>相手のアイテム</p>
                 <p style={{ fontWeight: 600, fontSize: 13, color: "#1a1208" }}>{showTradeModal.title}</p>
