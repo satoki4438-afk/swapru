@@ -1207,7 +1207,6 @@ export default function SwapApp() {
                   <p style={{ fontSize: 10, color: "#c4813a", fontWeight: 600 }}>プロフを見る →</p>
                 </div>
                 <button onClick={() => { setShowTradeModal(selectedItem); setSelectedMyItem(null); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: 13, color: "#1a1208", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 7 }}>⟳ 交換を申し込む（無料）</button>
-                <button onClick={() => { const t = threads.find(t => t.partner === selectedItem.owner); if (t) { openChat(t); } else { showToast("💬 メッセージを送りました！"); } }} className="bp" style={{ width: "100%", background: "#f0ede8", border: "none", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", marginBottom: 7 }}>💬 メッセージを送る</button>
                 <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#fff", border: "1px solid #e8dfd0", borderRadius: 12, padding: 11, color: "#5a4a3a", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 7 }}>
                   <span>📤</span>
                   <span>シェアする</span>
@@ -2221,7 +2220,11 @@ export default function SwapApp() {
             ) : (
               <span style={{ fontSize: 19, filter: view === v ? "none" : "grayscale(50%) opacity(.65)" }}>{icon}</span>
             )}
-            {v === "messages" && totalUnread > 0 && <div style={{ position: "absolute", top: 0, right: "calc(50% - 15px)", width: 7, height: 7, background: "#ef4444", borderRadius: "50%", border: "1.5px solid #fff" }} />}
+            {v === "messages" && (totalUnread + applications.filter(a => (a.status === "申し込み中" || a.status === "保留中") && a.applicantUid !== user?.uid).length) > 0 && (
+              <div style={{ position: "absolute", top: 0, right: "calc(50% - 18px)", background: "#ef4444", borderRadius: 10, minWidth: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", padding: "0 3px" }}>
+                {totalUnread + applications.filter(a => (a.status === "申し込み中" || a.status === "保留中") && a.applicantUid !== user?.uid).length}
+              </div>
+            )}
             <span style={{ fontSize: 8, fontWeight: 600, color: view === v ? "#c4813a" : "#8a7a6a" }}>{label}</span>
           </button>
         ))}
