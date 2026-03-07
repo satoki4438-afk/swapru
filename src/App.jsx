@@ -858,30 +858,43 @@ export default function SwapApp() {
               } catch(e) { console.log("review save error:", e); }
               // 出品ステータスを交換済みに（自分＋相手）
               try {
-                // 自分のアイテム
-                let myItemId = thread.myItemId || myItems.find(i => i.title === thread.myItem)?.firestoreId;
-                if (!myItemId) {
+                // 自分のアイテム - users/{uid}/itemsからpostIdを取得
+                let myPostId = null;
+                let myItemDocId = thread.myItemId;
+                if (!myItemDocId) {
                   const q = await getDocs(collection(db, "users", user.uid, "items"));
                   const found = q.docs.find(d => d.data().title === thread.myItem);
-                  if (found) myItemId = found.id;
+                  if (found) { myItemDocId = found.id; myPostId = found.data().postId || found.data().id?.toString(); }
+                } else {
+                  const snap = await getDocs(collection(db, "users", user.uid, "items"));
+                  const found = snap.docs.find(d => d.id === myItemDocId);
+                  if (found) myPostId = found.data().postId || found.data().id?.toString();
                 }
-                if (myItemId) {
-                  await updateDoc(doc(db, "posts", myItemId), { status: "交換済み" });
-                  try { await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" }); } catch(e) {}
-                  setMyItems(prev => prev.map(i => i.firestoreId === myItemId ? { ...i, status: "交換済み" } : i));
+                if (!myPostId) myPostId = myItems.find(i => i.title === thread.myItem)?.postId || myItems.find(i => i.title === thread.myItem)?.id?.toString();
+                if (myPostId) {
+                  try { await updateDoc(doc(db, "posts", String(myPostId)), { status: "交換済み" }); } catch(e) { console.log("posts update error:", e); }
                 }
+                if (myItemDocId) {
+                  try { await updateDoc(doc(db, "users", user.uid, "items", myItemDocId), { status: "交換済み" }); } catch(e) {}
+                }
+                setMyItems(prev => prev.map(i => i.title === thread.myItem ? { ...i, status: "交換済み" } : i));
+
                 // 相手のアイテム
-                let partnerItemId = thread.partnerItemId || allItems.find(i => i.title === thread.partnerItem)?.firestoreId;
-                if (!partnerItemId && thread.partnerUid) {
+                let partnerPostId = null;
+                let partnerItemDocId = thread.partnerItemId;
+                if (!partnerItemDocId && thread.partnerUid) {
                   const q2 = await getDocs(collection(db, "users", thread.partnerUid, "items"));
                   const found2 = q2.docs.find(d => d.data().title === thread.partnerItem);
-                  if (found2) partnerItemId = found2.id;
+                  if (found2) { partnerItemDocId = found2.id; partnerPostId = found2.data().postId || found2.data().id?.toString(); }
                 }
-                if (partnerItemId) {
-                  await updateDoc(doc(db, "posts", partnerItemId), { status: "交換済み" });
-                  try { if (thread.partnerUid) await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" }); } catch(e) {}
-                  setAllItems(prev => prev.map(i => i.firestoreId === partnerItemId ? { ...i, status: "交換済み" } : i));
+                if (!partnerPostId) partnerPostId = allItems.find(i => i.title === thread.partnerItem)?.id?.toString();
+                if (partnerPostId) {
+                  try { await updateDoc(doc(db, "posts", String(partnerPostId)), { status: "交換済み" }); } catch(e) { console.log("partner posts update error:", e); }
                 }
+                if (partnerItemDocId && thread.partnerUid) {
+                  try { await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemDocId), { status: "交換済み" }); } catch(e) {}
+                }
+                setAllItems(prev => prev.map(i => i.title === thread.partnerItem ? { ...i, status: "交換済み" } : i));
               } catch(e) { console.log("item status update error:", e); }
               // Firestoreのchatを完了に更新
               if (thread.firestoreId) {
@@ -1772,8 +1785,9 @@ export default function SwapApp() {
                 const newItem = { id: Date.now(), title: postForm.title, category: postForm.category, subCategory: postForm.subCategory || "その他", condition: postForm.condition, image: postForm.imageUrls?.[0] || postForm.image, imageUrls: postForm.imageUrls || [], status: "出品中", likes: 0, views: 0, wantItems: wantArr, keywords: wantArr, expiryDate: postForm.expiryDate || null, shippingNote: postForm.shippingNote || null, createdAt: new Date().toISOString(), ownerUid: user?.uid || "", owner: user?.name || "匿名", ownerAvatar: user?.avatar || "U", location: profileForm.locationPrivate ? "非公開" : profileForm.location };
                 if (user) {
                   // users/{uid}/items に保存（マイページ用）
-                  const docRef = await addDoc(collection(db, "users", user.uid, "items"), newItem);
+                  const docRef = await addDoc(collection(db, "users", user.uid, "items"), { ...newItem, postId: String(newItem.id) });
                   newItem.firestoreId = docRef.id;
+                  newItem.postId = String(newItem.id);
                   // posts に保存（全ユーザーに表示）
                   await setDoc(doc(db, "posts", String(newItem.id)), { ...newItem, createdAt: serverTimestamp() });
                 }
