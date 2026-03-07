@@ -1314,13 +1314,13 @@ export default function SwapApp() {
                   ➕ 新しく出品する
                 </button>
 
-                {myItems.length === 0 ? (
+                {myItems.filter(i => i.status !== "交換済み").length === 0 ? (
                   <div style={{ textAlign: "center", padding: "30px 0", color: "#8a7a6a" }}>
                     <div style={{ fontSize: 44, marginBottom: 10 }}>📭</div>
                     <p style={{ fontWeight: 600 }}>まだ出品がありません</p>
                     <p style={{ fontSize: 12, marginTop: 4 }}>上のボタンから出品してみよう！</p>
                   </div>
-                ) : myItems.map(item => (
+                ) : myItems.filter(i => i.status !== "交換済み").map(item => (
                   <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
                       <div style={{ width: 54, height: 54, background: "linear-gradient(135deg,#f7f4ef,#e8dfd0)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
