@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { auth, provider, db, storage, messaging, getToken, onMessage } from "./firebase";
 import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
-import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, onSnapshot, query, orderBy, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc, setDoc, onSnapshot, query, orderBy, where, serverTimestamp } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 // ─── SEED DATA（初回のみFirestoreに投入） ────────────────────────────────────
@@ -858,16 +858,28 @@ export default function SwapApp() {
               } catch(e) { console.log("review save error:", e); }
               // 出品ステータスを交換済みに（自分＋相手）
               try {
-                const myItemId = thread.myItemId || myItems.find(i => i.title === thread.myItem)?.firestoreId;
+                // 自分のアイテム
+                let myItemId = thread.myItemId;
+                if (!myItemId) {
+                  const q = await getDocs(query(collection(db, "posts"), where("ownerUid", "==", user.uid), where("title", "==", thread.myItem)));
+                  if (!q.empty) myItemId = q.docs[0].id;
+                }
+                if (!myItemId) myItemId = myItems.find(i => i.title === thread.myItem)?.firestoreId;
                 if (myItemId) {
                   await updateDoc(doc(db, "posts", myItemId), { status: "交換済み" });
-                  await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" });
+                  try { await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" }); } catch(e) {}
                   setMyItems(prev => prev.map(i => i.firestoreId === myItemId ? { ...i, status: "交換済み" } : i));
                 }
-                const partnerItemId = thread.partnerItemId || allItems.find(i => i.title === thread.partnerItem && i.ownerUid === thread.partnerUid)?.firestoreId;
-                if (partnerItemId && thread.partnerUid) {
+                // 相手のアイテム
+                let partnerItemId = thread.partnerItemId;
+                if (!partnerItemId && thread.partnerUid) {
+                  const q2 = await getDocs(query(collection(db, "posts"), where("ownerUid", "==", thread.partnerUid), where("title", "==", thread.partnerItem)));
+                  if (!q2.empty) partnerItemId = q2.docs[0].id;
+                }
+                if (!partnerItemId) partnerItemId = allItems.find(i => i.title === thread.partnerItem)?.firestoreId;
+                if (partnerItemId) {
                   await updateDoc(doc(db, "posts", partnerItemId), { status: "交換済み" });
-                  await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" });
+                  try { if (thread.partnerUid) await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" }); } catch(e) {}
                   setAllItems(prev => prev.map(i => i.firestoreId === partnerItemId ? { ...i, status: "交換済み" } : i));
                 }
               } catch(e) { console.log("item status update error:", e); }
