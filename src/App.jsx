@@ -248,9 +248,9 @@ export default function SwapApp() {
       try {
         const chatData = {
           applicantUid: app?.applicantUid, applicantName: app?.applicant, applicantAvatar: app?.applicantAvatar,
-          applicantItemTitle: app?.myItemTitle, applicantItemImage: safeMyItemImage,
+          applicantItemTitle: app?.myItemTitle, applicantItemImage: safeMyItemImage, applicantItemId: app?.myItemId || null,
           ownerUid: user.uid, ownerName: user.name, ownerAvatar: user.avatar,
-          ownerItemTitle: app?.itemTitle, ownerItemImage: safeItemImage,
+          ownerItemTitle: app?.itemTitle, ownerItemImage: safeItemImage, ownerItemId: app?.itemId || null,
           tradeStatus: "交渉中", lastMsg: "交渉が開始されました", updatedAt: serverTimestamp(),
           messages: [], unreadCount: { [app?.applicantUid]: 1 }
         };
@@ -872,12 +872,18 @@ export default function SwapApp() {
                   createdAt: serverTimestamp()
                 });
               } catch(e) { console.log("review save error:", e); }
-              // 出品ステータスを交換済みに更新
+              // 出品ステータスを交換済みに更新（自分＋相手）
               try {
                 const myPost = myItems.find(i => i.title === thread.myItem);
                 if (myPost?.firestoreId) {
                   await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "交換済み" });
                   await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "交換済み" });
+                }
+                // 相手のアイテムも交換済みに
+                const partnerPost = allItems.find(i => i.title === thread.partnerItem && i.ownerUid === thread.partnerUid);
+                if (partnerPost?.firestoreId) {
+                  await updateDoc(doc(db, "posts", partnerPost.firestoreId), { status: "交換済み" });
+                  await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerPost.firestoreId), { status: "交換済み" });
                 }
               } catch(e) {}
               updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`);
@@ -1407,7 +1413,7 @@ export default function SwapApp() {
 
                 {/* 完了済み */}
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", letterSpacing: 1, marginBottom: 9, marginTop: 4 }}>✅ 完了済み</p>
-                {threads.filter(t => t.status === "交換成立").map(t => (
+                {threads.filter(t => t.tradeStatus === "完了" || t.status === "交換成立").map(t => (
                   <div key={t.id} style={{ background: "#fff", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
                       <div style={{ flex: 1, background: "#f7f4ef", borderRadius: 10, padding: "9px", textAlign: "center" }}>
