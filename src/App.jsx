@@ -848,32 +848,39 @@ export default function SwapApp() {
             <textarea placeholder="コメントを入力（任意）" value={thread.reviewComment || ""} onChange={e => setOpenThread(prev => ({ ...prev, reviewComment: e.target.value }))} style={{ width: "100%", background: "#fff", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 11px", fontSize: 12, color: "#1a1208", resize: "none", height: 56, marginBottom: 7 }} />
             <button onClick={async () => { 
               if (!thread.reviewScore) { showToast("⭐ 星をつけてください"); return; }
+              // レビュー保存
               try {
                 await addDoc(collection(db, "users", thread.partnerUid || thread.partner, "reviews"), {
-                  fromUid: user?.uid,
-                  fromName: user?.name,
-                  rating: thread.reviewScore,
-                  comment: thread.reviewComment || "",
-                  itemTitle: thread.partnerItem || "",
-                  createdAt: serverTimestamp()
+                  fromUid: user?.uid, fromName: user?.name,
+                  rating: thread.reviewScore, comment: thread.reviewComment || "",
+                  itemTitle: thread.partnerItem || "", createdAt: serverTimestamp()
                 });
               } catch(e) { console.log("review save error:", e); }
-              // 出品ステータスを交換済みに更新（自分＋相手）
+              // 出品ステータスを交換済みに（自分＋相手）
               try {
-                // 自分のアイテム（IDがあればID優先、なければタイトルで検索）
                 const myItemId = thread.myItemId || myItems.find(i => i.title === thread.myItem)?.firestoreId;
                 if (myItemId) {
                   await updateDoc(doc(db, "posts", myItemId), { status: "交換済み" });
                   await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" });
+                  setMyItems(prev => prev.map(i => i.firestoreId === myItemId ? { ...i, status: "交換済み" } : i));
                 }
-                // 相手のアイテム
                 const partnerItemId = thread.partnerItemId || allItems.find(i => i.title === thread.partnerItem && i.ownerUid === thread.partnerUid)?.firestoreId;
                 if (partnerItemId && thread.partnerUid) {
                   await updateDoc(doc(db, "posts", partnerItemId), { status: "交換済み" });
                   await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" });
+                  setAllItems(prev => prev.map(i => i.firestoreId === partnerItemId ? { ...i, status: "交換済み" } : i));
                 }
               } catch(e) { console.log("item status update error:", e); }
-              updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`);
+              // Firestoreのchatを完了に更新
+              if (thread.firestoreId) {
+                try { await updateDoc(doc(db, "chats", thread.firestoreId), { tradeStatus: "完了", updatedAt: serverTimestamp() }); } catch(e) {}
+              }
+              // チャット欄から消してマイページ履歴へ
+              setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, tradeStatus: "完了", status: "完了" } : t));
+              if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+              showToast(`🎉 スワプる完了！${thread.reviewScore}⭐ ありがとうございました！`);
+              setView("mypage");
+              setMypageTab("history");
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
           </div>
         )}
@@ -1195,8 +1202,8 @@ export default function SwapApp() {
             )}
 
             {/* チャット一覧 */}
-            {threads.length > 0 && <p style={{ fontSize: 10, fontWeight: 700, color: "#8a7a6a", letterSpacing: 1, margin: "0 14px 7px" }}>💬 チャット</p>}
-            {threads.map((thread, i) => (
+            {threads.filter(t => t.tradeStatus !== "完了" && t.tradeStatus !== "キャンセル").length > 0 && <p style={{ fontSize: 10, fontWeight: 700, color: "#8a7a6a", letterSpacing: 1, margin: "0 14px 7px" }}>💬 チャット</p>}
+            {threads.filter(t => t.tradeStatus !== "完了" && t.tradeStatus !== "キャンセル").map((thread, i) => (
               <div key={thread.id} className="ph au" style={{ background: "#fff", margin: "0 14px 8px", borderRadius: 14, padding: 13, display: "flex", gap: 11, alignItems: "center", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animationDelay: `${i * 55}ms`, position: "relative" }} onClick={() => openChat(thread)}>
                 {thread.unread > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{thread.unread}</div>}
                 <div style={{ width: 46, height: 46, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>{thread.partnerAvatar}</div>
