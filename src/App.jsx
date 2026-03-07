@@ -403,6 +403,20 @@ export default function SwapApp() {
   });
 
 
+  // Androidバックボタン横取り
+  useEffect(() => {
+    const handleBack = () => {
+      if (view === "chat") { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }
+      else if (view === "messages" || view === "list" || view === "mypage") { setView("home"); }
+      else if (selectedItem) { setSelectedItem(null); }
+      else if (selectedOwner) { setSelectedOwner(null); }
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handleBack);
+    return () => window.removeEventListener("popstate", handleBack);
+  }, [view, selectedItem, selectedOwner]);
+
   // Chat scroll
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [openThread]);
 
@@ -966,20 +980,6 @@ export default function SwapApp() {
       </div>
     );
   }
-
-  // Androidバックボタン横取り
-  useEffect(() => {
-    const handleBack = (e) => {
-      if (view === "chat") { e.preventDefault(); if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }
-      else if (view === "messages" || view === "list" || view === "mypage") { e.preventDefault(); setView("home"); }
-      else if (selectedItem) { e.preventDefault(); setSelectedItem(null); }
-      else if (selectedOwner) { e.preventDefault(); setSelectedOwner(null); }
-    };
-    window.addEventListener("popstate", handleBack);
-    // ダミー履歴を積む
-    window.history.pushState(null, "", window.location.href);
-    return () => window.removeEventListener("popstate", handleBack);
-  }, [view, selectedItem, selectedOwner]);
 
   // ── MAIN APP SHELL ──
   return (
