@@ -810,15 +810,17 @@ export default function SwapApp() {
               const swapruBy = thread.swapruBy || [];
               if (swapruBy.includes(myUid)) { showToast("すでにスワプる！を押しています。相手の返答を待ちましょう"); return; }
               const newSwapruBy = [...swapruBy, myUid];
-              const bothPressed = newSwapruBy.includes(thread.ownerUid || "") && newSwapruBy.includes(thread.partnerUid || "");
+              const bothPressed = newSwapruBy.length >= 2 || (newSwapruBy.includes(thread.ownerUid) && newSwapruBy.includes(thread.partnerUid));
               if (bothPressed) {
                 await updateTradeStatus("発送中", "🎉 両者スワプる成立！お互い発送の準備をしましょう");
                 if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy });
               } else {
                 setOpenThread(prev => ({ ...prev, swapruBy: newSwapruBy }));
                 setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, swapruBy: newSwapruBy } : t));
-                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy, lastMsg: "🔁 スワプる申請を送りました！相手の返答を待ちましょう", updatedAt: serverTimestamp() });
-                showToast("🔁 スワプる！を押しました。相手の返答を待ちましょう");
+                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy, lastMsg: "🔁 スワプる！を押しました。相手の返答を待ちましょう", updatedAt: serverTimestamp() });
+                // systemメッセージを追加
+                if (thread.firestoreId) await addDoc(collection(db, "chats", thread.firestoreId, "messages"), { from: "system", text: `🔁 ${user.name}さんがスワプる！を押しました`, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), createdAt: serverTimestamp() });
+                showToast("🔁 スワプる！を押しました。相手も押したら発送へ進みます");
               }
             }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#e8dfd0" : "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
               {(thread.swapruBy || []).includes(user.uid) ? "⏳ 相手待ち" : "🔁 スワプる！"}
