@@ -220,9 +220,9 @@ export default function SwapApp() {
     // Firestoreのpostsから最新のownerUidを取得
     const itemOwnerUid = item.ownerUid && item.ownerUid !== "seed" ? item.ownerUid : item.firestoreOwnerUid || "";
     const app = {
-      itemId: item.id, itemTitle: item.title, itemOwner: item.owner, itemImage: item.image,
+      itemId: item.firestoreId || item.id, itemTitle: item.title, itemOwner: item.owner, itemImage: item.image,
       itemOwnerUid,
-      myItemId: myItem.id, myItemTitle: myItem.title, myItemImage: myItem.image || "📦",
+      myItemId: myItem.firestoreId || myItem.id, myItemTitle: myItem.title, myItemImage: myItem.image || "📦",
       applicant: user?.name || "匿名", applicantUid: user?.uid, applicantAvatar: user?.avatar || "U",
       message, status: "申し込み中",
       deadline: deadline.toISOString(),
@@ -256,25 +256,9 @@ export default function SwapApp() {
         };
         const chatRef = await addDoc(collection(db, "chats"), chatData);
         await updateDoc(doc(db, "applications", appId), { status: "交渉中" });
-        const newThread = {
-          id: chatRef.id, firestoreId: chatRef.id,
-          partner: app?.applicant, partnerAvatar: app?.applicantAvatar || app?.applicant?.charAt(0) || "U",
-          partnerItem: app?.myItemTitle, partnerItemImage: safeMyItemImage,
-          myItem: app?.itemTitle, myItemImage: safeItemImage,
-          status: "交渉中", tradeStatus: "交渉中", unread: 0, lastMsg: "交渉が開始されました", lastTime: "今",
-          messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
-        };
-        setThreads(prev => [...prev, newThread]);
+        // Firestoreリスナーが自動でthreadsに追加するので手動追加不要
       } catch(e) {
         console.error(e);
-        const newThread = {
-          id: `app_${appId}`, partner: app?.applicant, partnerAvatar: app?.applicant?.charAt(0) || "U",
-          partnerItem: app?.myItemTitle, partnerItemImage: safeMyItemImage,
-          myItem: app?.itemTitle, myItemImage: safeItemImage,
-          status: "交渉中", tradeStatus: "交渉中", unread: 1, lastMsg: app?.message || "交渉を開始しました", lastTime: "今",
-          messages: [{ id: Date.now(), from: "system", text: "🤝 交渉が開始されました！48時間以内にスワプるかどうか決めましょう", time: "今", read: true }],
-        };
-        setThreads(prev => [...prev, newThread]);
       }
       showToast("🤝 交渉を開始しました！チャットで詳細を決めましょう");
     } else if (response === "保留") {
@@ -653,8 +637,10 @@ export default function SwapApp() {
         partnerAvatar: c.ownerUid === user.uid ? c.applicantAvatar : c.ownerAvatar,
         partnerUid: c.ownerUid === user.uid ? c.applicantUid : c.ownerUid,
         partnerItem: c.ownerUid === user.uid ? c.applicantItemTitle : c.ownerItemTitle,
+        partnerItemId: c.ownerUid === user.uid ? c.applicantItemId : c.ownerItemId,
         partnerItemImage: (() => { const img = c.ownerUid === user.uid ? c.applicantItemImage : c.ownerItemImage; return img?.startsWith?.("http") ? "📦" : (img || "📦"); })(),
         myItem: c.ownerUid === user.uid ? c.ownerItemTitle : c.applicantItemTitle,
+        myItemId: c.ownerUid === user.uid ? c.ownerItemId : c.applicantItemId,
         myItemImage: (() => { const img = c.ownerUid === user.uid ? c.ownerItemImage : c.applicantItemImage; return img?.startsWith?.("http") ? "📦" : (img || "📦"); })(),
         status: c.tradeStatus || "交渉中",
         tradeStatus: c.tradeStatus || "交渉中",
@@ -874,18 +860,19 @@ export default function SwapApp() {
               } catch(e) { console.log("review save error:", e); }
               // 出品ステータスを交換済みに更新（自分＋相手）
               try {
-                const myPost = myItems.find(i => i.title === thread.myItem);
-                if (myPost?.firestoreId) {
-                  await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "交換済み" });
-                  await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "交換済み" });
+                // 自分のアイテム（IDがあればID優先、なければタイトルで検索）
+                const myItemId = thread.myItemId || myItems.find(i => i.title === thread.myItem)?.firestoreId;
+                if (myItemId) {
+                  await updateDoc(doc(db, "posts", myItemId), { status: "交換済み" });
+                  await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" });
                 }
-                // 相手のアイテムも交換済みに
-                const partnerPost = allItems.find(i => i.title === thread.partnerItem && i.ownerUid === thread.partnerUid);
-                if (partnerPost?.firestoreId) {
-                  await updateDoc(doc(db, "posts", partnerPost.firestoreId), { status: "交換済み" });
-                  await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerPost.firestoreId), { status: "交換済み" });
+                // 相手のアイテム
+                const partnerItemId = thread.partnerItemId || allItems.find(i => i.title === thread.partnerItem && i.ownerUid === thread.partnerUid)?.firestoreId;
+                if (partnerItemId && thread.partnerUid) {
+                  await updateDoc(doc(db, "posts", partnerItemId), { status: "交換済み" });
+                  await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" });
                 }
-              } catch(e) {}
+              } catch(e) { console.log("item status update error:", e); }
               updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`);
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
           </div>
