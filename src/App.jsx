@@ -441,7 +441,7 @@ export default function SwapApp() {
   const matchedItems = allItems.filter(item => getMatchReasons(item, myItems, profileForm.wantKeywords).length > 0);
   const totalUnread = threads.reduce((s, t) => s + t.unread, 0);
 
-  const filteredItems = allItems.filter(item => !blockedUsers.includes(item.owner)).filter(item => item.ownerUid !== user?.uid && item.owner !== user?.name).filter(item => {
+  const filteredItems = allItems.filter(item => item.status !== "交換済み").filter(item => !blockedUsers.includes(item.owner)).filter(item => item.ownerUid !== user?.uid && item.owner !== user?.name).filter(item => {
     const mc = selectedCategory === "すべて" || item.category === selectedCategory;
     const ms = !searchQuery || item.title.includes(searchQuery) || item.wantItems?.some(w => w.includes(searchQuery));
     return mc && ms;
@@ -557,7 +557,7 @@ export default function SwapApp() {
   const saveProfile = async () => {
     if (!user) return;
     try {
-      await setDoc(doc(db, "users", user.uid, "profile", "data"), {
+      await setDoc(doc(db, "users", user.uid, "profile", "main"), {
         name: profileForm.name,
         bio: profileForm.bio,
         location: profileForm.location,
@@ -705,7 +705,7 @@ export default function SwapApp() {
         lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
         messages: c.messages || [],
       }));
-      setThreads(mapped.sort((a, b) => (b.lastTime || "").localeCompare(a.lastTime || "")));
+      setThreads(mapped.sort((a, b) => { if (b.unread !== a.unread) return b.unread - a.unread; return (b.lastTime || "").localeCompare(a.lastTime || ""); }));
     });
     return () => unsub();
   }, [user]);
@@ -914,8 +914,36 @@ export default function SwapApp() {
                   createdAt: serverTimestamp()
                 });
               } catch(e) { console.log("review save error:", e); }
+              // 出品ステータスを交換済みに更新
+              try {
+                const myPost = myItems.find(i => i.title === thread.myItem);
+                if (myPost?.firestoreId) {
+                  await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "交換済み" });
+                  await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "交換済み" });
+                }
+              } catch(e) {}
               updateTradeStatus("完了", `🎉 スワプる完了！${thread.reviewScore}⭐ の評価をしました。ありがとうございました！`);
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
+          </div>
+        )}
+        {(ts === "交渉中" || ts === "発送中" || ts === "受取確認") && (
+          <div style={{ background: "#fff7ed", borderBottom: "1px solid #fed7aa", padding: "7px 14px", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
+            <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？
+チャットは非表示になります。", onOk: async () => {
+              try {
+                await updateDoc(doc(db, "chats", openThread.firestoreId), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
+                // 出品ステータスを出品中に戻す
+                const myPost = myItems.find(i => i.title === thread.myItem);
+                if (myPost?.firestoreId) {
+                  await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "出品中" });
+                  await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "出品中" });
+                }
+              } catch(e) {}
+              setThreads(prev => prev.filter(t => t.id !== openThread.id));
+              if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+              setView("messages");
+              showToast("キャンセルしました");
+            }})} className="bp" style={{ background: "none", border: "1px solid #f97316", borderRadius: 20, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: "#f97316", cursor: "pointer" }}>🚫 交渉をやめる</button>
           </div>
         )}
         {ts === "完了" && (
@@ -995,6 +1023,20 @@ export default function SwapApp() {
       </div>
     );
   }
+
+  // Androidバックボタン横取り
+  useEffect(() => {
+    const handleBack = (e) => {
+      if (view === "chat") { e.preventDefault(); if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }
+      else if (view === "messages" || view === "list" || view === "mypage") { e.preventDefault(); setView("home"); }
+      else if (selectedItem) { e.preventDefault(); setSelectedItem(null); }
+      else if (selectedOwner) { e.preventDefault(); setSelectedOwner(null); }
+    };
+    window.addEventListener("popstate", handleBack);
+    // ダミー履歴を積む
+    window.history.pushState(null, "", window.location.href);
+    return () => window.removeEventListener("popstate", handleBack);
+  }, [view, selectedItem, selectedOwner]);
 
   // ── MAIN APP SHELL ──
   return (
@@ -2149,7 +2191,7 @@ export default function SwapApp() {
 
       {/* ── BOTTOM NAV ── */}
       <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#fff", borderTop: "1px solid #e8dfd0", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 18px rgba(0,0,0,.08)" }}>
-        {[["🏠","ホーム","home"],["🔍","さがす","list"],["➕","投稿",null],["💬","メッセージ","messages"],["👤","マイページ","mypage"]].map(([icon, label, v]) => (
+        {[["🏠","ホーム","home"],["🔍","さがす","list"],["➕","投稿",null],["💬","スワップ","messages"],["👤","マイページ","mypage"]].map(([icon, label, v]) => (
           <button key={label} onClick={() => v ? setView(v) : setShowPostModal(true)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, cursor: "pointer", padding: "2px 0", position: "relative" }}>
             {label === "投稿" ? (
               <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, marginTop: -12, boxShadow: "0 4px 14px rgba(212,165,116,.5)" }}>➕</div>
