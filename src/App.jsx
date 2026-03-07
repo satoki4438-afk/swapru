@@ -644,6 +644,9 @@ export default function SwapApp() {
         myItemImage: (() => { const img = c.ownerUid === user.uid ? c.ownerItemImage : c.applicantItemImage; return img?.startsWith?.("http") ? "📦" : (img || "📦"); })(),
         status: c.tradeStatus || "交渉中",
         tradeStatus: c.tradeStatus || "交渉中",
+        ownerUid: c.ownerUid,
+        swapruBy: c.swapruBy || [],
+        reviewedBy: c.reviewedBy || [],
         unread: c.unreadCount?.[user.uid] || 0,
         lastMsg: c.lastMsg || "",
         lastTime: c.updatedAt ? new Date(c.updatedAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "",
@@ -720,7 +723,7 @@ export default function SwapApp() {
   if (view === "chat" && openThread) {
     const thread = openThread;
     const ts = thread.tradeStatus || "交渉中";
-    const TRADE_STEPS = ["申し込み", "交渉中", "スワプる！", "発送中", "受取確認", "評価", "完了"];
+    const TRADE_STEPS = ["申し込み", "交渉中", "発送中", "受取確認", "評価", "完了"];
     const stepIdx = TRADE_STEPS.indexOf(ts);
 
     const updateTradeStatus = async (newStatus, extraMsg) => {
@@ -802,16 +805,24 @@ export default function SwapApp() {
         {ts === "交渉中" && (
           <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
             <p style={{ fontSize: 11, color: "#92400e", flex: 1 }}>💬 条件が合ったら「スワプる！」を押しましょう</p>
-            <button onClick={() => updateTradeStatus("スワプる！", "🔁 スワプる申請を送りました！相手の承認を待ちましょう")} className="bp" style={{ background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>🔁 スワプる！</button>
-          </div>
-        )}
-        {ts === "スワプる！" && (
-          <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", flexShrink: 0 }}>
-            <p style={{ fontSize: 11, color: "#92400e", marginBottom: 7, fontWeight: 600 }}>🔁 スワプる申請が届いています！</p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button onClick={() => updateTradeStatus("発送中", "🎉 スワプる成立！お互い発送の準備をしましょう")} className="bp" style={{ flex: 1, background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "8px 0", color: "#1a1208", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>✅ スワプる成立！</button>
-              <button onClick={() => updateTradeStatus("交渉中", "🙏 申し訳ありませんが、今回はご縁がありませんでした。またの機会によろしくお願いします。")} className="bp" style={{ flex: 1, background: "#f0ede8", border: "1px solid #e8dfd0", borderRadius: 9, padding: "8px 0", color: "#8a7a6a", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>🙏 ごめんなさい</button>
-            </div>
+            <button onClick={async () => {
+              const myUid = user.uid;
+              const swapruBy = thread.swapruBy || [];
+              if (swapruBy.includes(myUid)) { showToast("すでにスワプる！を押しています。相手の返答を待ちましょう"); return; }
+              const newSwapruBy = [...swapruBy, myUid];
+              const bothPressed = newSwapruBy.includes(thread.ownerUid || "") && newSwapruBy.includes(thread.partnerUid || "");
+              if (bothPressed) {
+                await updateTradeStatus("発送中", "🎉 両者スワプる成立！お互い発送の準備をしましょう");
+                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy });
+              } else {
+                setOpenThread(prev => ({ ...prev, swapruBy: newSwapruBy }));
+                setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, swapruBy: newSwapruBy } : t));
+                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy, lastMsg: "🔁 スワプる申請を送りました！相手の返答を待ちましょう", updatedAt: serverTimestamp() });
+                showToast("🔁 スワプる！を押しました。相手の返答を待ちましょう");
+              }
+            }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#e8dfd0" : "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
+              {(thread.swapruBy || []).includes(user.uid) ? "⏳ 相手待ち" : "🔁 スワプる！"}
+            </button>
           </div>
         )}
         {ts === "発送中" && (
@@ -837,7 +848,12 @@ export default function SwapApp() {
             <button onClick={() => updateTradeStatus("評価", "✅ 受け取り完了！お互いの評価をお願いします🌟")} className="bp" style={{ background: "#16a34a", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>✅ 受け取りました</button>
           </div>
         )}
-        {ts === "評価" && (
+        {ts === "評価" && (thread.reviewedBy || []).includes(user.uid) && (
+          <div style={{ background: "#f0fdf4", borderBottom: "1px solid #bbf7d0", padding: "9px 14px", flexShrink: 0 }}>
+            <p style={{ fontSize: 11, color: "#15803d", fontWeight: 700 }}>⭐ 評価済み！相手の評価を待っています...</p>
+          </div>
+        )}
+        {ts === "評価" && !(thread.reviewedBy || []).includes(user.uid) && (
           <div style={{ background: "#fdf4ff", borderBottom: "1px solid #e9d5ff", padding: "9px 14px", flexShrink: 0 }}>
             <p style={{ fontSize: 11, color: "#7e22ce", marginBottom: 7, fontWeight: 600 }}>🌟 {thread.partner} さんを評価してください</p>
             <div style={{ display: "flex", gap: 6, marginBottom: 7 }}>
@@ -902,16 +918,27 @@ export default function SwapApp() {
                 }
                 setAllItems(prev => prev.map(i => i.title === thread.partnerItem ? { ...i, status: "交換済み" } : i));
               } catch(e) { console.log("item status update error:", e); }
-              // Firestoreのchatを完了に更新
+              // FirestoreのchatにreviewedBy追加
+              const reviewedBy = [...(thread.reviewedBy || []), user.uid];
+              const bothReviewed = reviewedBy.includes(thread.ownerUid || "") && reviewedBy.includes(thread.partnerUid || "");
               if (thread.firestoreId) {
-                try { await updateDoc(doc(db, "chats", thread.firestoreId), { tradeStatus: "完了", updatedAt: serverTimestamp() }); } catch(e) {}
+                try { await updateDoc(doc(db, "chats", thread.firestoreId), { reviewedBy, updatedAt: serverTimestamp(), ...(bothReviewed ? { tradeStatus: "完了" } : {}) }); } catch(e) {}
               }
-              // チャット欄から消してマイページ履歴へ
-              setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, tradeStatus: "完了", status: "完了" } : t));
-              if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
-              showToast(`🎉 スワプる完了！${thread.reviewScore}⭐ ありがとうございました！`);
-              setView("mypage");
-              setMypageTab("history");
+              if (bothReviewed) {
+                // 両方評価完了→チャット欄から消してマイページ履歴へ
+                setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, tradeStatus: "完了", status: "完了" } : t));
+                if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+                showToast(`🎉 スワプる完了！${thread.reviewScore}⭐ ありがとうございました！`);
+                setView("mypage");
+                setMypageTab("history");
+              } else {
+                // 片方のみ評価済み→チャット残して待機
+                setOpenThread(prev => ({ ...prev, reviewedBy }));
+                setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, reviewedBy } : t));
+                if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+                showToast(`⭐ 評価しました！相手の評価を待っています`);
+                setView("messages");
+              }
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
           </div>
         )}
