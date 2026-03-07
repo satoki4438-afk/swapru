@@ -870,7 +870,10 @@ export default function SwapApp() {
                   const found = snap.docs.find(d => d.id === myItemDocId);
                   if (found) myPostId = found.data().postId || found.data().id?.toString();
                 }
-                if (!myPostId) myPostId = myItems.find(i => i.title === thread.myItem)?.postId || myItems.find(i => i.title === thread.myItem)?.id?.toString();
+                if (!myPostId) {
+                  const found2 = myItems.find(i => i.title === thread.myItem);
+                  myPostId = found2?.postId || found2?.id?.toString();
+                }
                 if (myPostId) {
                   try { await updateDoc(doc(db, "posts", String(myPostId)), { status: "交換済み" }); } catch(e) { console.log("posts update error:", e); }
                 }
@@ -887,7 +890,10 @@ export default function SwapApp() {
                   const found2 = q2.docs.find(d => d.data().title === thread.partnerItem);
                   if (found2) { partnerItemDocId = found2.id; partnerPostId = found2.data().postId || found2.data().id?.toString(); }
                 }
-                if (!partnerPostId) partnerPostId = allItems.find(i => i.title === thread.partnerItem)?.id?.toString();
+                if (!partnerPostId) {
+                  const found3 = allItems.find(i => i.title === thread.partnerItem);
+                  partnerPostId = found3?.postId || found3?.id?.toString();
+                }
                 if (partnerPostId) {
                   try { await updateDoc(doc(db, "posts", String(partnerPostId)), { status: "交換済み" }); } catch(e) { console.log("partner posts update error:", e); }
                 }
