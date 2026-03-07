@@ -390,7 +390,7 @@ export default function SwapApp() {
   // Androidバックボタン横取り
   useEffect(() => {
     const handleBack = () => {
-      if (view === "chat") { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }
+      if (view === "chat") { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setConfirmDialog(null); setView("messages"); }
       else if (view === "messages" || view === "list" || view === "mypage") { setView("home"); }
       else if (selectedItem) { setSelectedItem(null); }
       else if (selectedOwner) { setSelectedOwner(null); }
@@ -472,15 +472,22 @@ export default function SwapApp() {
       const unsub = onSnapshot(q, (snap) => {
         const msgs = snap.docs.map(d => ({
           id: d.id,
-          from: d.data().from === user.uid ? "me" : "them",
+          from: d.data().from === user.uid ? "me" : (d.data().from === "system" ? "system" : "them"),
           text: d.data().text,
           time: d.data().createdAt ? new Date(d.data().createdAt.toDate()).toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }) : "今",
           read: d.data().read || false
         }));
         setOpenThread(prev => prev ? { ...prev, messages: msgs } : prev);
       });
+      // 親ドキュメント（tradeStatus等）リアルタイムリスナー
+      const unsub2 = onSnapshot(doc(db, "chats", thread.firestoreId), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+        setOpenThread(prev => prev ? { ...prev, tradeStatus: data.tradeStatus || prev.tradeStatus, status: data.tradeStatus || prev.status, swapruBy: data.swapruBy || prev.swapruBy || [], reviewedBy: data.reviewedBy || prev.reviewedBy || [] } : prev);
+        setThreads(prev => prev.map(t => t.firestoreId === thread.firestoreId ? { ...t, tradeStatus: data.tradeStatus || t.tradeStatus, status: data.tradeStatus || t.status, swapruBy: data.swapruBy || t.swapruBy || [], reviewedBy: data.reviewedBy || t.reviewedBy || [] } : t));
+      });
       // チャットを閉じたらリスナー解除
-      window._chatUnsub = unsub;
+      window._chatUnsub = () => { unsub(); unsub2(); };
     }
   };
 
@@ -752,7 +759,7 @@ export default function SwapApp() {
 
         {/* Chat header */}
         <div style={{ background: "#1a1208", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 16px rgba(0,0,0,.3)" }}>
-          <button onClick={() => { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setView("messages"); }} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
+          <button onClick={() => { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setConfirmDialog(null); setView("messages"); }} style={{ background: "none", border: "none", color: "#d4a574", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
           <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#1a1208", fontWeight: 700, fontSize: 14, flexShrink: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>{thread.partnerAvatar}</div>
           <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>
             <p style={{ color: "#f0ede8", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
@@ -803,34 +810,60 @@ export default function SwapApp() {
 
         {/* アクションバー（ステータス別） */}
         {ts === "交渉中" && (
-          <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-            <p style={{ fontSize: 11, color: "#92400e", flex: 1 }}>💬 条件が合ったら「スワプる！」を押しましょう</p>
-            <button onClick={async () => {
-              const myUid = user.uid;
-              const swapruBy = thread.swapruBy || [];
-              if (swapruBy.includes(myUid)) { showToast("すでにスワプる！を押しています。相手の返答を待ちましょう"); return; }
-              const newSwapruBy = [...swapruBy, myUid];
-              const bothPressed = newSwapruBy.length >= 2 || (newSwapruBy.includes(thread.ownerUid) && newSwapruBy.includes(thread.partnerUid));
-              if (bothPressed) {
-                await updateTradeStatus("発送中", "🎉 両者スワプる成立！お互い発送の準備をしましょう");
-                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy });
-              } else {
-                setOpenThread(prev => ({ ...prev, swapruBy: newSwapruBy }));
-                setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, swapruBy: newSwapruBy } : t));
-                if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy, lastMsg: "🔁 スワプる！を押しました。相手の返答を待ちましょう", updatedAt: serverTimestamp() });
-                // systemメッセージを追加
-                if (thread.firestoreId) await addDoc(collection(db, "chats", thread.firestoreId, "messages"), { from: "system", text: `🔁 ${user.name}さんがスワプる！を押しました`, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), createdAt: serverTimestamp() });
-                showToast("🔁 スワプる！を押しました。相手も押したら発送へ進みます");
-              }
-            }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#e8dfd0" : "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
-              {(thread.swapruBy || []).includes(user.uid) ? "⏳ 相手待ち" : "🔁 スワプる！"}
-            </button>
+          <div style={{ background: "#fffbeb", borderBottom: "1px solid #fcd34d", padding: "9px 14px", flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <p style={{ fontSize: 11, color: "#92400e", flex: 1 }}>💬 条件が合ったら「スワプる！」を押しましょう</p>
+              <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？\nチャットは非表示になります。", onOk: async () => {
+                try {
+                  const fid = thread.firestoreId;
+                  if (fid) await updateDoc(doc(db, "chats", fid), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
+                } catch(e) {}
+                setThreads(prev => prev.filter(t => t.id !== thread.id));
+                if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+                setView("messages");
+                showToast("キャンセルしました");
+              }})} className="bp" style={{ background: "none", border: "1px solid #f97316", borderRadius: 20, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#f97316", cursor: "pointer", flexShrink: 0 }}>🚫 やめる</button>
+              <button onClick={async () => {
+                const myUid = user.uid;
+                const swapruBy = thread.swapruBy || [];
+                if (swapruBy.includes(myUid)) { showToast("すでにスワプる！を押しています。相手の返答を待ちましょう"); return; }
+                const newSwapruBy = [...new Set([...swapruBy, myUid])];
+                const bothPressed = newSwapruBy.length >= 2;
+                if (bothPressed) {
+                  if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy });
+                  await updateTradeStatus("発送中", "🎉 両者スワプる成立！お互い発送の準備をしましょう");
+                } else {
+                  setOpenThread(prev => ({ ...prev, swapruBy: newSwapruBy }));
+                  setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, swapruBy: newSwapruBy } : t));
+                  if (thread.firestoreId) await updateDoc(doc(db, "chats", thread.firestoreId), { swapruBy: newSwapruBy, lastMsg: "🔁 スワプる！を押しました。相手の返答を待ちましょう", updatedAt: serverTimestamp() });
+                  if (thread.firestoreId) await addDoc(collection(db, "chats", thread.firestoreId, "messages"), { from: "system", text: `🔁 ${user.name}さんがスワプる！を押しました`, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), createdAt: serverTimestamp() });
+                  showToast("🔁 スワプる！を押しました。相手も押したら発送へ進みます");
+                }
+              }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#e8dfd0" : "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#1a1208", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
+                {(thread.swapruBy || []).includes(user.uid) ? "⏳ 相手待ち" : "🔁 スワプる！"}
+              </button>
+            </div>
           </div>
         )}
         {ts === "発送中" && (
           <div style={{ background: "#eff6ff", borderBottom: "1px solid #bfdbfe", padding: "9px 14px", flexShrink: 0 }}>
             <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
               <p style={{ fontSize: 11, color: "#1e40af", flex: 1 }}>📦 発送が完了したら押してください</p>
+              <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？\nチャットは非表示になります。", onOk: async () => {
+                try {
+                  const fid = thread.firestoreId || openThread.firestoreId;
+                  if (fid) await updateDoc(doc(db, "chats", fid), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
+                  const myPost = myItems.find(i => i.title === thread.myItem);
+                  if (myPost?.firestoreId) {
+                    try { await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "出品中" }); } catch(e) {}
+                    try { await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "出品中" }); } catch(e) {}
+                  }
+                } catch(e) {}
+                setThreads(prev => prev.filter(t => t.id !== (thread.id || openThread.id)));
+                if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
+                setView("messages");
+                showToast("キャンセルしました");
+              }})} className="bp" style={{ background: "none", border: "1px solid #f97316", borderRadius: 20, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#f97316", cursor: "pointer", flexShrink: 0 }}>🚫 やめる</button>
               <button onClick={() => updateTradeStatus("受取確認", "📦 発送しました！相手の受取確認を待ちましょう")} className="bp" style={{ background: "#3b82f6", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>📦 発送しました</button>
             </div>
             <div style={{ background: "rgba(255,255,255,.7)", borderRadius: 9, padding: 9 }}>
@@ -942,25 +975,6 @@ export default function SwapApp() {
                 setView("messages");
               }
             }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#a855f7,#7e22ce)", border: "none", borderRadius: 9, padding: "9px 0", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>評価を送信する</button>
-          </div>
-        )}
-        {(ts === "交渉中" || ts === "発送中" || ts === "受取確認") && (
-          <div style={{ background: "#fff7ed", borderBottom: "1px solid #fed7aa", padding: "7px 14px", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-            <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？\nチャットは非表示になります。", onOk: async () => {
-              try {
-                await updateDoc(doc(db, "chats", openThread.firestoreId), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
-                // 出品ステータスを出品中に戻す
-                const myPost = myItems.find(i => i.title === thread.myItem);
-                if (myPost?.firestoreId) {
-                  await updateDoc(doc(db, "posts", myPost.firestoreId), { status: "出品中" });
-                  await updateDoc(doc(db, "users", user.uid, "items", myPost.firestoreId), { status: "出品中" });
-                }
-              } catch(e) {}
-              setThreads(prev => prev.filter(t => t.id !== openThread.id));
-              if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
-              setView("messages");
-              showToast("キャンセルしました");
-            }})} className="bp" style={{ background: "none", border: "1px solid #f97316", borderRadius: 20, padding: "4px 12px", fontSize: 10, fontWeight: 700, color: "#f97316", cursor: "pointer" }}>🚫 交渉をやめる</button>
           </div>
         )}
         {ts === "完了" && (
@@ -2170,7 +2184,7 @@ export default function SwapApp() {
             <p style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 20, textAlign: "center", lineHeight: 1.6 }}>{confirmDialog.message}</p>
             <div style={{ display: "flex", gap: 10 }}>
               <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#8a7a6a", cursor: "pointer" }}>キャンセル</button>
-              <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>削除する</button>
+              <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>{confirmDialog.okLabel || "やめる"}</button>
             </div>
           </div>
         </div>
