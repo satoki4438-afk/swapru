@@ -859,24 +859,24 @@ export default function SwapApp() {
               // 出品ステータスを交換済みに（自分＋相手）
               try {
                 // 自分のアイテム
-                let myItemId = thread.myItemId;
+                let myItemId = thread.myItemId || myItems.find(i => i.title === thread.myItem)?.firestoreId;
                 if (!myItemId) {
-                  const q = await getDocs(query(collection(db, "posts"), where("ownerUid", "==", user.uid), where("title", "==", thread.myItem)));
-                  if (!q.empty) myItemId = q.docs[0].id;
+                  const q = await getDocs(collection(db, "users", user.uid, "items"));
+                  const found = q.docs.find(d => d.data().title === thread.myItem);
+                  if (found) myItemId = found.id;
                 }
-                if (!myItemId) myItemId = myItems.find(i => i.title === thread.myItem)?.firestoreId;
                 if (myItemId) {
                   await updateDoc(doc(db, "posts", myItemId), { status: "交換済み" });
                   try { await updateDoc(doc(db, "users", user.uid, "items", myItemId), { status: "交換済み" }); } catch(e) {}
                   setMyItems(prev => prev.map(i => i.firestoreId === myItemId ? { ...i, status: "交換済み" } : i));
                 }
                 // 相手のアイテム
-                let partnerItemId = thread.partnerItemId;
+                let partnerItemId = thread.partnerItemId || allItems.find(i => i.title === thread.partnerItem)?.firestoreId;
                 if (!partnerItemId && thread.partnerUid) {
-                  const q2 = await getDocs(query(collection(db, "posts"), where("ownerUid", "==", thread.partnerUid), where("title", "==", thread.partnerItem)));
-                  if (!q2.empty) partnerItemId = q2.docs[0].id;
+                  const q2 = await getDocs(collection(db, "users", thread.partnerUid, "items"));
+                  const found2 = q2.docs.find(d => d.data().title === thread.partnerItem);
+                  if (found2) partnerItemId = found2.id;
                 }
-                if (!partnerItemId) partnerItemId = allItems.find(i => i.title === thread.partnerItem)?.firestoreId;
                 if (partnerItemId) {
                   await updateDoc(doc(db, "posts", partnerItemId), { status: "交換済み" });
                   try { if (thread.partnerUid) await updateDoc(doc(db, "users", thread.partnerUid, "items", partnerItemId), { status: "交換済み" }); } catch(e) {}
