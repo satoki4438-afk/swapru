@@ -17,13 +17,6 @@ const SEED_ITEMS = [
   { id: "seed8", title: "ハンドメイド革財布", category: "👕 ファッション", subCategory: "その他", condition: "新品同様", wantItems: ["バッグ", "ベルト", "腕時計"], image: "👜", owner: "craft_momo", ownerAvatar: "M", ownerUid: "seed", location: "京都府京都市", views: 189, likes: 22, status: "出品中", imageUrls: [] },
 ];
 
-const SAMPLE_WANTLIST = [
-  { id: "w1", title: "フィルムカメラ全般", category: "カメラ", detail: "Canonか Nikonの古いフィルムカメラ。動作品であれば外観不問。", image: "📷", owner: "retro_lover", ownerAvatar: "R", location: "東京都", offering: "ロードバイク用ヘルメット", offeringImage: "⛑️", created: "2時間前", responses: 3 },
-  { id: "w2", title: "アコースティックギター", category: "楽器", detail: "初心者でも弾きやすいもの。ハードケースあれば尚良し。", image: "🎸", owner: "music_start", ownerAvatar: "M", location: "大阪府", offering: "Nintendo Switch本体", offeringImage: "🎮", created: "5時間前", responses: 7 },
-  { id: "w3", title: "一眼レフカメラ（どこのメーカーでも）", category: "カメラ", detail: "旅行用に欲しい。レンズキットだと最高。", image: "📸", owner: "travel_kei", ownerAvatar: "K", location: "神奈川県", offering: "コーヒーメーカー + 豆セット", offeringImage: "☕", created: "1日前", responses: 12 },
-  { id: "w4", title: "PS5本体", category: "ゲーム", detail: "ディスクドライブ版希望。コントローラー付きだと嬉しい。", image: "🎮", owner: "game_seeker", ownerAvatar: "G", location: "福岡県", offering: "iPad Air + Appleペンシル", offeringImage: "📱", created: "3日前", responses: 21 },
-];
-
 // チャットのモックデータ
 const MOCK_THREADS = [
   {
@@ -155,48 +148,6 @@ function ItemCard({ item, liked, onLike, onClick, delay = 0 }) {
   );
 }
 
-function WantCard({ item, onRespond, delay = 0 }) {
-  return (
-    <div className="au" style={{ background: "#fff", borderRadius: 15, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 10px rgba(0,0,0,.06)", animationDelay: `${delay}ms` }}>
-      <div style={{ background: "linear-gradient(90deg,#f0f7ff,#e8f0ff)", padding: "9px 13px", borderBottom: "1px solid #e8eefc", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <span style={{ fontSize: 13 }}>🙋</span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#1d4ed8" }}>これ欲しい！リクエスト</span>
-        </div>
-        <span style={{ fontSize: 10, color: "#8a7a6a" }}>{item.created} · {item.responses}件</span>
-      </div>
-      <div style={{ padding: 13 }}>
-        <div style={{ display: "flex", gap: 11, marginBottom: 9 }}>
-          <div style={{ width: 60, height: 60, background: "linear-gradient(135deg,#f0f7ff,#dbeafe)", borderRadius: 11, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 60)}</div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontWeight: 700, fontSize: 13, color: "#1a1208", marginBottom: 3 }}>{item.title}</p>
-            <span style={{ background: "#f0ede8", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#5a4a3a" }}>{item.category}</span>
-          </div>
-        </div>
-        <p style={{ fontSize: 11, color: "#5a4a3a", lineHeight: 1.6, marginBottom: 9, background: "#f7f4ef", borderRadius: 9, padding: "8px 10px" }}>"{item.detail}"</p>
-        <div style={{ background: "linear-gradient(90deg,#fef9f0,#fff8e8)", borderRadius: 10, padding: "9px 11px", display: "flex", gap: 9, alignItems: "center", marginBottom: 10, border: "1px solid #f0e0c0" }}>
-          <div style={{ fontSize: 24 }}>{item.offeringImage}</div>
-          <div>
-            <p style={{ fontSize: 9, color: "#c4813a", fontWeight: 700, marginBottom: 1 }}>↔ 交換に出せるもの</p>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#1a1208" }}>{item.offering}</p>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ width: 28, height: 28, background: "#d4a574", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 11, flexShrink: 0 }}>{item.ownerAvatar}</div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#1a1208" }}>{item.owner}</p>
-            <p style={{ fontSize: 9, color: "#8a7a6a" }}>📍 {item.location}</p>
-          </div>
-          <button onClick={() => onRespond(item)} className="bp" style={{ background: "linear-gradient(135deg,#3b82f6,#1d4ed8)", border: "none", borderRadius: 9, padding: "8px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer" }}>🙋 応じる</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── MAIN APP ─────────────────────────────────────────────────────────────────
-
-// 画像URLを安全に表示するヘルパー
 function imgSafe(src, size = 36) {
   if (!src) return <span style={{ fontSize: size * 0.7 }}>📦</span>;
   if (typeof src === "string" && src.startsWith("http")) return <img src={src} style={{ width: size, height: size, objectFit: "cover", borderRadius: 6, display: "block" }} />;
@@ -450,14 +401,7 @@ export default function SwapApp() {
     if (b.id === boostedItemId) return 1;
     return 0;
   });
-  const filteredWants = SAMPLE_WANTLIST.filter(item => {
-    const mc = selectedCategory === "すべて" || item.category === selectedCategory;
-    return mc && (!searchQuery || item.title.includes(searchQuery));
-  }).sort((a, b) => {
-    const aPref = profileForm.preferredCategories.includes(a.category) ? 0 : 1;
-    const bPref = profileForm.preferredCategories.includes(b.category) ? 0 : 1;
-    return aPref - bPref;
-  });
+
 
   // Chat scroll
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [openThread]);
@@ -928,8 +872,7 @@ export default function SwapApp() {
         )}
         {(ts === "交渉中" || ts === "発送中" || ts === "受取確認") && (
           <div style={{ background: "#fff7ed", borderBottom: "1px solid #fed7aa", padding: "7px 14px", flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
-            <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？
-チャットは非表示になります。", onOk: async () => {
+            <button onClick={() => setConfirmDialog({ message: "交渉をキャンセルしますか？\nチャットは非表示になります。", onOk: async () => {
               try {
                 await updateDoc(doc(db, "chats", openThread.firestoreId), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
                 // 出品ステータスを出品中に戻す
@@ -1088,7 +1031,6 @@ export default function SwapApp() {
               <h2 style={{ color: "#f0ede8", fontSize: 20, fontWeight: 900, lineHeight: 1.3, marginBottom: 13 }}>不要なものを<br /><span style={{ color: "#d4a574" }}>価値ある交換へ</span></h2>
               <div style={{ display: "flex", gap: 8 }}>
                 <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "#d4a574", border: "none", borderRadius: 9, padding: "9px 14px", color: "#1a1208", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>出品を探す →</button>
-                <button onClick={() => { setView("list"); setListTab("want"); }} className="bp" style={{ background: "rgba(59,130,246,.2)", border: "1px solid rgba(59,130,246,.4)", borderRadius: 9, padding: "9px 14px", color: "#93c5fd", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>🙋 欲しいを見る</button>
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#d4c4a8", marginBottom: 12 }}>
@@ -1111,13 +1053,6 @@ export default function SwapApp() {
               </div>
             )}
             <div style={{ padding: "0 14px 10px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1208" }}>🙋 新着「欲しい」</p>
-                <button onClick={() => { setView("list"); setListTab("want"); }} className="bp" style={{ background: "none", border: "none", color: "#3b82f6", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
-              </div>
-              {SAMPLE_WANTLIST.slice(0, 2).map((w, i) => <WantCard key={w.id} item={w} onRespond={(it) => setShowTradeModal({ ...it, fromWant: true })} delay={i * 55} />)}
-            </div>
-            <div style={{ padding: "0 14px 0" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1208" }}>🔥 新着出品</p>
                 <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
@@ -1149,16 +1084,7 @@ export default function SwapApp() {
                 <div style={{ marginTop: 12 }}><AffiliateCard ad={AFFILIATE_ADS[2]} /></div>
               </div>
             )}
-            {listTab === "want" && (
-              <div style={{ padding: "4px 14px" }}>
-                <div style={{ background: "#f0f7ff", border: "1px solid #bfdbfe", borderRadius: 11, padding: "9px 12px", marginBottom: 10, display: "flex", gap: 7 }}>
-                  <span style={{ fontSize: 16 }}>💡</span>
-                  <p style={{ fontSize: 11, color: "#1d4ed8" }}>「これ持ってる！」と思ったら<strong>「応じる」</strong>ボタンを押そう</p>
-                </div>
-                {filteredWants.map((item, i) => <WantCard key={item.id} item={item} onRespond={(it) => setShowTradeModal({ ...it, fromWant: true })} delay={i * 50} />)}
-                <AffiliateCard ad={AFFILIATE_ADS[2]} />
-              </div>
-            )}
+
           </div>
         )}
 
