@@ -1065,7 +1065,7 @@ export default function SwapApp() {
               </div>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#d4c4a8", marginBottom: 12 }}>
-              {[[`${allItems.length}`, "出品数"], [`${likedItems.length}`, "お気に入り"], ["¥0", "手数料"]].map(([n, l]) => (
+              {[[`${allItems.filter(i=>i.status!=="交換済み").length}`, "出品数"], [`${likedItems.length}`, "お気に入り"], ["¥0", "手数料"]].map(([n, l]) => (
                 <div key={l} style={{ background: "#f7f4ef", padding: "11px 0", textAlign: "center" }}>
                   <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#1a1208" }}>{n}</div>
                   <div style={{ fontSize: 9, color: "#8a7a6a", marginTop: 1 }}>{l}</div>
@@ -1089,7 +1089,7 @@ export default function SwapApp() {
                 <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                {allItems.filter(item => item.ownerUid !== user?.uid && item.owner !== user?.name).slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
+                {allItems.filter(item => item.status !== "交換済み" && item.ownerUid !== user?.uid && item.owner !== user?.name).slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
               </div>
             </div>
             <div style={{ padding: "12px 14px 0" }}>{AFFILIATE_ADS.slice(1).map(ad => <AffiliateCard key={ad.id} ad={ad} compact />)}</div>
@@ -2024,7 +2024,7 @@ export default function SwapApp() {
           {adminTab === "dashboard" && (
             <div style={{ padding: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                {[["📦 出品数", allItems.length + myItems.length, "#d4a574"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
+                {[["📦 出品数", allItems.filter(i=>i.status!=="交換済み").length + myItems.filter(i=>i.status!=="交換済み").length, "#d4a574"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
                   <div key={label} style={{ background: "#fff", borderRadius: 13, padding: 14, boxShadow: "0 2px 10px rgba(0,0,0,.06)", textAlign: "center" }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color }}>{val}</p>
                     <p style={{ fontSize: 11, color: "#8a7a6a" }}>{label}</p>
@@ -2049,7 +2049,7 @@ export default function SwapApp() {
           {/* ── 出品タブ ── */}
           {adminTab === "items" && (
             <div style={{ padding: 14 }}>
-              <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 10 }}>全出品 {allItems.length + myItems.length}件</p>
+              <p style={{ fontSize: 11, color: "#8a7a6a", marginBottom: 10 }}>全出品 {allItems.filter(i=>i.status!=="交換済み").length + myItems.filter(i=>i.status!=="交換済み").length}件</p>
               {[...allItems, ...myItems].map(item => (
                 <div key={item.id} style={{ background: "#fff", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
