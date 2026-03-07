@@ -729,7 +729,7 @@ export default function SwapApp() {
   // ── CHAT SCREEN (full screen) ──
   if (view === "chat" && openThread) {
     const thread = openThread;
-    const ts = thread.tradeStatus || "交渉中";
+    const ts = openThread.tradeStatus || "交渉中";
     const TRADE_STEPS = ["申し込み", "交渉中", "発送中", "受取確認", "評価", "完了"];
     const stepIdx = TRADE_STEPS.indexOf(ts);
 
