@@ -220,7 +220,10 @@ export default function SwapApp() {
     if (!thread) return;
     try {
       const fid = thread.firestoreId;
-      if (fid) await updateDoc(doc(db, "chats", fid), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
+      if (fid) {
+        await updateDoc(doc(db, "chats", fid), { tradeStatus: "キャンセル", updatedAt: serverTimestamp() });
+        await addDoc(collection(db, "chats", fid, "messages"), { from: "system", text: "🚫 交渉がキャンセルされました", time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), createdAt: serverTimestamp() });
+      }
     } catch(e) { console.error("cancel error:", e); }
     setThreads(prev => prev.filter(t => t.id !== thread.id));
     if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; }
