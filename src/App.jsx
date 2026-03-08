@@ -1043,6 +1043,19 @@ export default function SwapApp() {
             <span style={{ fontSize: 18 }}>↑</span>
           </button>
         </div>
+        {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1208", color: "#f0ede8", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
+        {confirmDialog && (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+            <div style={{ background: "#fff", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1208", marginBottom: 6, textAlign: "center" }}>確認</p>
+              <p style={{ fontSize: 13, color: "#5a4a3a", marginBottom: 20, textAlign: "center", lineHeight: 1.6 }}>{confirmDialog.message}</p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#f0ede8", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#8a7a6a", cursor: "pointer" }}>キャンセル</button>
+                <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>{confirmDialog.okLabel || "やめる"}</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
