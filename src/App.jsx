@@ -193,9 +193,10 @@ export default function SwapApp() {
   const [reportReason, setReportReason] = useState("");
   const [reports, setReports] = useState([]);
   const [adminTab, setAdminTab] = useState("dashboard");
-  const [applications, setApplications] = useState([]); // 申し込み一覧
-  const [cancelCount, setCancelCount] = useState(0); // キャンセル回数
-  const [blockedUsers, setBlockedUsers] = useState([]); // ブロックリスト
+  const [applications, setApplications] = useState([]);
+  const [cancelCount, setCancelCount] = useState(0);
+  const [myReviews, setMyReviews] = useState([]);
+  const [blockedUsers, setBlockedUsers] = useState([]);
   const ADMIN_EMAIL = "satoki4438@gmail.com";
   const isAdmin = user?.email === ADMIN_EMAIL;
 
@@ -294,10 +295,17 @@ export default function SwapApp() {
     }
   };
 
-  const cancelApplication = (appId) => {
+  const cancelApplication = async (appId) => {
     const newCount = cancelCount + 1;
     setCancelCount(newCount);
     setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: "キャンセル" } : a));
+    // Firestore同期
+    try {
+      const app = applications.find(a => a.id === appId);
+      if (app?.firestoreId) {
+        await updateDoc(doc(db, "applications", app.firestoreId), { status: "キャンセル", updatedAt: serverTimestamp() });
+      }
+    } catch(e) { console.error("cancelApplication error:", e); }
     if (newCount >= 3) showToast("⚠️ キャンセルが多いです。警告バッジが付く場合があります");
     else showToast("キャンセルしました");
   };
@@ -539,6 +547,14 @@ export default function SwapApp() {
     } catch(e) { showToast("❌ 保存に失敗しました"); }
   };
 
+  const loadMyReviews = async (uid) => {
+    try {
+      const snap = await getDocs(collection(db, "users", uid, "reviews"));
+      const reviews = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setMyReviews(reviews);
+    } catch(e) { console.error("loadMyReviews error:", e); }
+  };
+
   const loadProfile = async (uid) => {
     try {
       const snap = await getDocs(collection(db, "users", uid, "profile"));
@@ -591,6 +607,7 @@ export default function SwapApp() {
       loadMyItems(result.user.uid);
       loadLikes(result.user.uid);
       loadProfile(result.user.uid);
+      loadMyReviews(result.user.uid);
     } catch (e) {
       setAuthState("landing");
       showToast("❌ ログインに失敗しました");
@@ -614,6 +631,7 @@ export default function SwapApp() {
         loadMyItems(firebaseUser.uid);
         loadLikes(firebaseUser.uid);
         loadProfile(firebaseUser.uid);
+        loadMyReviews(firebaseUser.uid);
       } else {
         setAuthState("landing");
       }
@@ -1881,7 +1899,7 @@ export default function SwapApp() {
 
             {/* 評価サマリ */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#e8dfd0", margin: "0 0 14px" }}>
-              {[["⭐ 評価", "4.8"], ["🔁 成立", `${threads.filter(t => t.tradeStatus === "完了").length}回`], ["❌ キャンセル率", "0%"]].map(([label, val]) => (
+              {[["⭐ 評価", myReviews.length > 0 ? (myReviews.reduce((s, r) => s + (r.rating || 0), 0) / myReviews.length).toFixed(1) : "なし"], ["🔁 成立", `${threads.filter(t => t.tradeStatus === "完了").length}回`], ["❌ キャンセル率", "0%"]].map(([label, val]) => (
                 <div key={label} style={{ background: "#fff", padding: "12px 0", textAlign: "center" }}>
                   <p style={{ fontSize: 16, fontWeight: 800, color: "#1a1208" }}>{val}</p>
                   <p style={{ fontSize: 9, color: "#8a7a6a" }}>{label}</p>
