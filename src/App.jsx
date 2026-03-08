@@ -54,7 +54,7 @@ const MOCK_THREADS = [
 ];
 
 const AFFILIATE_ADS = [
-  { id: "af1", brand: "Amazon", tag: "PR", title: "カメラ用品をAmazonでチェック", desc: "交換できなかったものは買い足しで解決！", image: "📦", cta: "Amazonで見る →", url: "https://www.amazon.co.jp/", color: ["#FF9900", "#e07800"], category: "カメラ" },
+  { id: "af1", brand: "Amazon", tag: "PR", title: "カメラ用品をAmazonでチェック", desc: "交換できなかったものは買い足しで解決！", image: "📦", cta: "Amazonで見る →", url: "https://www.amazon.co.jp/?tag=satoki7700-22", color: ["#FF9900", "#e07800"], category: "カメラ" },
   { id: "af2", brand: "楽天市場", tag: "PR", title: "楽天で楽器・音楽機材を探す", desc: "ポイント還元でさらにお得に", image: "🎸", cta: "楽天で見る →", url: "https://www.rakuten.co.jp/", color: ["#bf0000", "#900"], category: "楽器" },
   { id: "af5", brand: "メルカリShops", tag: "PR", title: "交換できない場合はメルカリで", desc: "出品無料・全国配送対応", image: "🏪", cta: "メルカリを開く", url: "https://mercari-shops.com/", color: ["#FF0211", "#cc0010"], category: null },
 ];
