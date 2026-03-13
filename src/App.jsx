@@ -80,7 +80,7 @@ function AffiliateCard({ ad, compact }) {
 
 function ItemCard({ item, liked, onLike, onClick, delay = 0 }) {
   return (
-    <div className="ph" onClick={onClick} style={{ background: "#1e2130", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animation: `up .34s ease ${delay}ms both` }}>
+    <div className="ph" onClick={onClick} style={{ background: "#1a1d2e", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animation: `up .34s ease ${delay}ms both` }}>
       <div style={{ background: "linear-gradient(135deg,#1a1d27,#252836)", height: 100, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, position: "relative", overflow: "hidden" }}>
         {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
         <button onClick={e => onLike(item.id, e)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 26, height: 26, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -89,7 +89,7 @@ function ItemCard({ item, liked, onLike, onClick, delay = 0 }) {
       </div>
       <div style={{ padding: "8px 9px 10px" }}>
         <p style={{ fontSize: 11, fontWeight: 600, color: "#e8eaf0", lineHeight: 1.3, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{item.title}</p>
-        <div style={{ background: "#0f1117", borderRadius: 6, padding: "3px 7px" }}>
+        <div style={{ background: "#0d0f1a", borderRadius: 6, padding: "3px 7px" }}>
           <p style={{ fontSize: 9, color: "#6a58f0", fontWeight: 700 }}>⟳ {item.wantItems?.[0]} など</p>
         </div>
       </div>
@@ -636,7 +636,7 @@ export default function SwapApp() {
 
   // ── LANDING ──
   if (authState !== "app") return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "linear-gradient(160deg,#1a1208 0%,#2d1f0e 50%,#1a1208 100%)", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "linear-gradient(160deg,#0d0f1a 0%,#141728 50%,#0d0f1a 100%)", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -647,20 +647,20 @@ export default function SwapApp() {
       <div style={{ position: "absolute", top: -60, left: -60, width: 250, height: 250, background: "radial-gradient(circle,rgba(124,106,255,.12) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div className="au" style={{ animationDelay: "0ms", textAlign: "center", marginBottom: 40 }}>
         <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, margin: "0 auto 16px", boxShadow: "0 8px 32px rgba(124,106,255,.35)" }}>⟳</div>
-        <h1 style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 38, color: "#f5f0e8", letterSpacing: -1 }}>Swap<span style={{ color: "#d4a574" }}>ru</span></h1>
-        <p style={{ color: "#c4a882", fontSize: 13, marginTop: 8 }}>お金を使わない、新しい交換体験</p>
+        <h1 style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 38, color: "#e8eaf0", letterSpacing: -1 }}>Swap<span style={{ color: "#7c6aff" }}>ru</span></h1>
+        <p style={{ color: "#8892aa", fontSize: 13, marginTop: 8 }}>お金を使わない、新しい交換体験</p>
       </div>
       <div className="au" style={{ animationDelay: "80ms", width: "100%", marginBottom: 36 }}>
         {[["⟳", "手数料ゼロ", "出品・交換・メッセージすべて無料"], ["🎯", "ザッピングして発見", "AIに頼らず、自分で探す楽しさ"], ["🙋", "欲しいも投稿できる", "「これ頂戴」リクエスト機能つき"]].map(([icon, ttl, desc]) => (
           <div key={ttl} style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14 }}>
             <div style={{ width: 40, height: 40, background: "rgba(124,106,255,.12)", borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{icon}</div>
-            <div><p style={{ color: "#0f1117", fontSize: 13, fontWeight: 700 }}>{ttl}</p><p style={{ color: "#6b7280", fontSize: 11, marginTop: 1 }}>{desc}</p></div>
+            <div><p style={{ color: "#e8eaf0", fontSize: 13, fontWeight: 700 }}>{ttl}</p><p style={{ color: "#6b7280", fontSize: 11, marginTop: 1 }}>{desc}</p></div>
           </div>
         ))}
       </div>
       {authState === "landing" ? (
         <div className="au" style={{ animationDelay: "160ms", width: "100%" }}>
-          <button onClick={() => handleLogin()} className="bp" style={{ width: "100%", background: "#1e2130", border: "none", borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", marginBottom: 11, boxShadow: "0 4px 16px rgba(0,0,0,.2)" }}>
+          <button onClick={() => handleLogin()} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 14, padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer", marginBottom: 11, boxShadow: "0 4px 16px rgba(0,0,0,.2)" }}>
             <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
             <span style={{ fontWeight: 700, fontSize: 15, color: "#e8eaf0", flex: 1, textAlign: "center" }}>Googleでログイン</span>
           </button>
@@ -695,7 +695,7 @@ export default function SwapApp() {
     };
 
     return (
-      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#0a0c14", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
+      <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#0d0f1a", height: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column" }}>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
           *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -706,18 +706,18 @@ export default function SwapApp() {
         `}</style>
 
         {/* Chat header */}
-        <div style={{ background: "#1a1208", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 20px rgba(0,0,0,.6)" }}>
+        <div style={{ background: "#0d0f1a", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 20px rgba(0,0,0,.6)" }}>
           <button onClick={() => { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setConfirmDialog(null); setView("messages"); }} style={{ background: "none", border: "none", color: "#7c6aff", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
           <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 14, flexShrink: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>{thread.partnerAvatar}</div>
           <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>
-            <p style={{ color: "#0f1117", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
+            <p style={{ color: "#e8eaf0", fontWeight: 700, fontSize: 14 }}>{thread.partner}</p>
             <p style={{ color: "#6b7280", fontSize: 10, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{thread.partnerItemImage} {thread.partnerItem}</p>
           </div>
           <button onClick={() => { if (window.confirm(`${thread.partner} をブロックしますか？`)) blockUser(thread.partner, ""); }} style={{ background: "none", border: "none", color: "#8892aa", fontSize: 11, cursor: "pointer", padding: "4px 6px" }}>🚫</button>
         </div>
 
         {/* ステータスレール */}
-        <div style={{ background: "#1e2130", borderBottom: "1px solid #252836", padding: "10px 12px", flexShrink: 0, overflowX: "auto" }}>
+        <div style={{ background: "#1a1d2e", borderBottom: "1px solid #252836", padding: "10px 12px", flexShrink: 0, overflowX: "auto" }}>
           <div style={{ display: "flex", alignItems: "center", minWidth: "max-content", gap: 0 }}>
             {TRADE_STEPS.map((step, i) => {
               const done = i < stepIdx;
@@ -725,12 +725,12 @@ export default function SwapApp() {
               return (
                 <div key={step} style={{ display: "flex", alignItems: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                    <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? "#7c6aff" : current ? "#7c6aff" : "#252836", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: done || current ? "#fff" : "#4a5068", fontWeight: 700, flexShrink: 0 }}>
+                    <div style={{ width: 20, height: 20, borderRadius: "50%", background: done ? "#7c6aff" : current ? "#7c6aff" : "#252840", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: done || current ? "#fff" : "#4a5068", fontWeight: 700, flexShrink: 0 }}>
                       {done ? "✓" : i + 1}
                     </div>
                     <p style={{ fontSize: 8, fontWeight: current ? 700 : 400, color: current ? "#e8eaf0" : done ? "#7c6aff" : "#4a5068", whiteSpace: "nowrap" }}>{step}</p>
                   </div>
-                  {i < TRADE_STEPS.length - 1 && <div style={{ width: 18, height: 2, background: done ? "#7c6aff" : "#252836", marginBottom: 11, flexShrink: 0 }} />}
+                  {i < TRADE_STEPS.length - 1 && <div style={{ width: 18, height: 2, background: done ? "#7c6aff" : "#252840", marginBottom: 11, flexShrink: 0 }} />}
                 </div>
               );
             })}
@@ -738,7 +738,7 @@ export default function SwapApp() {
         </div>
 
         {/* Trade context bar */}
-        <div style={{ background: "#1e2130", padding: "10px 14px", borderBottom: "1px solid #252836", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
+        <div style={{ background: "#1a1d2e", padding: "10px 14px", borderBottom: "1px solid #252836", display: "flex", gap: 10, alignItems: "center", flexShrink: 0 }}>
           <div style={{ display: "flex", gap: 6, alignItems: "center", flex: 1 }}>
             <div style={{ width: 36, height: 36, background: "linear-gradient(135deg,#1a1d27,#252836)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>{thread.myItemImage}</div>
             <div style={{ minWidth: 0 }}>
@@ -776,7 +776,7 @@ export default function SwapApp() {
                   if (thread.firestoreId) await addDoc(collection(db, "chats", thread.firestoreId, "messages"), { from: "system", text: `🔁 ${user.name}さんがスワプる！を押しました`, time: new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" }), createdAt: serverTimestamp() });
                   showToast("🔁 スワプる！を押しました。相手も押したら発送へ進みます");
                 }
-              }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#252836" : "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#e8eaf0", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
+              }} className="bp" style={{ background: (thread.swapruBy || []).includes(user.uid) ? "#252840" : "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 9, padding: "7px 13px", color: "#e8eaf0", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>
                 {(thread.swapruBy || []).includes(user.uid) ? "⏳ 相手待ち" : "🔁 スワプる！"}
               </button>
             </div>
@@ -790,9 +790,9 @@ export default function SwapApp() {
               <button onClick={() => updateTradeStatus("受取確認", "📦 発送しました！相手の受取確認を待ちましょう")} className="bp" style={{ background: "#3b82f6", border: "none", borderRadius: 9, padding: "7px 13px", color: "#fff", fontWeight: 700, fontSize: 11, cursor: "pointer", flexShrink: 0 }}>📦 発送しました</button>
             </div>
             <div style={{ background: "rgba(30,33,48,.7)", borderRadius: 9, padding: 9 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#7e22ce", marginBottom: 5 }}>🔒 住所を教えずに送る方法（匿名配送）</p>
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#7e22ce", marginBottom: 5 }}>住所を教えずに送る方法（匿名配送）</p>
               {[
-                ["📮 郵便局留め","相手に「◯◯郵便局留め・名前」だけ教えれば住所不要。全国どこでもOK"],
+                ["郵便局留め","相手に「◯◯郵便局留め・名前」だけ教えれば住所不要。全国どこでもOK"],
                 ["📦 営業所止め（ヤマト）","ヤマト営業所を送り先に指定。相手が最寄り営業所で受け取り"],
                 ["🟡 PUDOロッカー","駅・コンビニの宅配ロッカーを受取先に。住所非公開で受け取れる"],
               ].map(([name, desc]) => (
@@ -801,15 +801,15 @@ export default function SwapApp() {
                   <p style={{ fontSize: 10, color: "#a0a8c0" }}>{desc}</p>
                 </div>
               ))}
-              <p style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", marginBottom: 4, marginTop: 6 }}>📮 通常の発送方法</p>
-              {[["📦 ヤマト宅急便","コンビニ・営業所から。追跡あり。翌日〜2日"],["📮 ゆうパック","郵便局・コンビニから。追跡・補償あり"],["✉️ ゆうメール","1kg以内 300円〜。小型向き"],["📬 クリックポスト","全国一律185円。ポスト投函。1kgまで"]].map(([name, desc]) => (
+              <p style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", marginBottom: 4, marginTop: 6 }}>通常の発送方法</p>
+              {[["📦 ヤマト宅急便","コンビニ・営業所から。追跡あり。翌日〜2日"],["ゆうパック","郵便局・コンビニから。追跡・補償あり"],["✉️ ゆうメール","1kg以内 300円〜。小型向き"],["📬 クリックポスト","全国一律185円。ポスト投函。1kgまで"]].map(([name, desc]) => (
                 <div key={name} style={{ display: "flex", gap: 6, marginBottom: 3 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#1e40af", whiteSpace: "nowrap" }}>{name}</p>
                   <p style={{ fontSize: 10, color: "#a0a8c0" }}>{desc}</p>
                 </div>
               ))}
               <div style={{ marginTop: 8, background: "#e0f2fe", borderRadius: 7, padding: "8px 10px", border: "1px solid #bae6fd" }}>
-                <p style={{ fontSize: 10, fontWeight: 700, color: "#0369a1", marginBottom: 4 }}>🔒 住所を教えずに送る（LINE匿名配送）</p>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#0369a1", marginBottom: 4 }}>住所を教えずに送る（LINE匿名配送）</p>
                 <p style={{ fontSize: 10, color: "#0369a1", lineHeight: 1.6 }}>① チャットでLINEを交換する<br />② ヤマト「宅急便をスマホで送る」→お届け先「LINEでリクエスト」<br />③ 個人情報を「非公開」にしてリクエスト送信<br />④ 相手が住所を入力したら発送OK！</p>
                 <p style={{ fontSize: 9, color: "#5a7a9a", marginTop: 4 }}>※ 送料 +110円。クロネコメンバーズ登録が必要。</p>
               </div>
@@ -838,7 +838,7 @@ export default function SwapApp() {
                 <button key={s} onClick={() => setOpenThread(prev => ({ ...prev, reviewScore: s }))} style={{ fontSize: 24, background: "none", border: "none", cursor: "pointer", opacity: (thread.reviewScore || 0) >= s ? 1 : 0.3 }}>⭐</button>
               ))}
             </div>
-            <textarea placeholder="コメントを入力（任意）" value={thread.reviewComment || ""} onChange={e => setOpenThread(prev => ({ ...prev, reviewComment: e.target.value }))} style={{ width: "100%", background: "#1e2130", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 11px", fontSize: 12, color: "#e8eaf0", resize: "none", height: 56, marginBottom: 7 }} />
+            <textarea placeholder="コメントを入力（任意）" value={thread.reviewComment || ""} onChange={e => setOpenThread(prev => ({ ...prev, reviewComment: e.target.value }))} style={{ width: "100%", background: "#1a1d2e", border: "1px solid #e9d5ff", borderRadius: 9, padding: "8px 11px", fontSize: 12, color: "#e8eaf0", resize: "none", height: 56, marginBottom: 7 }} />
             <button onClick={async () => {
               if (!thread.reviewScore) { showToast("⭐ 星をつけてください"); return; }
               try {
@@ -933,7 +933,7 @@ export default function SwapApp() {
             const isSystem = msg.from === "system";
             if (isSystem) return (
               <div key={msg.id} style={{ textAlign: "center", margin: "10px 0", animation: `up .25s ease both` }}>
-                <span style={{ background: "#0f1117", border: "1px solid #252836", borderRadius: 20, padding: "5px 14px", fontSize: 10, color: "#6b7280" }}>{msg.text}</span>
+                <span style={{ background: "#0d0f1a", border: "1px solid #252836", borderRadius: 20, padding: "5px 14px", fontSize: 10, color: "#6b7280" }}>{msg.text}</span>
               </div>
             );
             return (
@@ -943,7 +943,7 @@ export default function SwapApp() {
                   {msg.imageUrl ? (
                     <img src={msg.imageUrl} style={{ width: 180, height: 180, objectFit: "cover", borderRadius: 12, display: "block" }} />
                   ) : (
-                    <div style={{ background: isMe ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#1e2130", borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 13px", boxShadow: "0 2px 8px rgba(0,0,0,.08)" }}>
+                    <div style={{ background: isMe ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#1a1d2e", borderRadius: isMe ? "16px 16px 4px 16px" : "16px 16px 16px 4px", padding: "10px 13px", boxShadow: "0 2px 8px rgba(0,0,0,.08)" }}>
                       <p style={{ fontSize: 13, color: "#e8eaf0", lineHeight: 1.5 }}>{msg.text}</p>
                     </div>
                   )}
@@ -963,7 +963,7 @@ export default function SwapApp() {
         </div>
 
         {/* Input */}
-        <div style={{ background: "#1e2130", padding: "10px 12px", borderTop: "1px solid #252836", display: "flex", gap: 8, alignItems: "flex-end", flexShrink: 0, paddingBottom: "max(10px, env(safe-area-inset-bottom))" }}>
+        <div style={{ background: "#1a1d2e", padding: "10px 12px", borderTop: "1px solid #252836", display: "flex", gap: 8, alignItems: "flex-end", flexShrink: 0, paddingBottom: "max(10px, env(safe-area-inset-bottom))" }}>
           <input type="file" accept="image/*" ref={el => window._chatImgInput = el} style={{ display: "none" }} onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file || !user) return;
@@ -977,22 +977,22 @@ export default function SwapApp() {
               setThreads(prev => prev.map(t => t.id === thread.id ? { ...t, lastMsg: "📷 写真", lastTime: now } : t));
             } catch(e) { showToast("❌ 送信失敗"); }
           }} />
-          <button onClick={() => window._chatImgInput?.click()} className="bp" style={{ width: 40, height: 40, background: "#0f1117", border: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, fontSize: 18 }}>📷</button>
-          <div style={{ flex: 1, background: "#0f1117", borderRadius: 22, padding: "10px 14px", display: "flex", alignItems: "center" }}>
+          <button onClick={() => window._chatImgInput?.click()} className="bp" style={{ width: 40, height: 40, background: "#0d0f1a", border: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0, fontSize: 18 }}>📷</button>
+          <div style={{ flex: 1, background: "#0d0f1a", borderRadius: 22, padding: "10px 14px", display: "flex", alignItems: "center" }}>
             <textarea value={chatInput} onChange={e => setChatInput(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }} placeholder="メッセージを入力..." rows={1} style={{ flex: 1, background: "none", border: "none", fontSize: 13, color: "#e8eaf0", resize: "none", lineHeight: 1.5, maxHeight: 100 }} />
           </div>
-          <button onClick={sendMessage} disabled={!chatInput.trim()} className="bp" style={{ width: 42, height: 42, background: chatInput.trim() ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#252836", border: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatInput.trim() ? "pointer" : "default", flexShrink: 0 }}>
+          <button onClick={sendMessage} disabled={!chatInput.trim()} className="bp" style={{ width: 42, height: 42, background: chatInput.trim() ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#252840", border: "none", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", cursor: chatInput.trim() ? "pointer" : "default", flexShrink: 0 }}>
             <span style={{ fontSize: 18 }}>↑</span>
           </button>
         </div>
-        {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#2a2d3e", color: "#e8eaf0", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
+        {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1d2e", color: "#e8eaf0", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
         {confirmDialog && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-            <div style={{ background: "#1e2130", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
+            <div style={{ background: "#1a1d2e", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
               <p style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0", marginBottom: 6, textAlign: "center" }}>確認</p>
               <p style={{ fontSize: 13, color: "#a0a8c0", marginBottom: 20, textAlign: "center", lineHeight: 1.6 }}>{confirmDialog.message}</p>
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>キャンセル</button>
+                <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>キャンセル</button>
                 <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>{confirmDialog.okLabel || "やめる"}</button>
               </div>
             </div>
@@ -1004,7 +1004,7 @@ export default function SwapApp() {
 
   // ── MAIN APP SHELL ──
   return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#0f1117", minHeight: "100vh", maxWidth: 430, margin: "0 auto" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#0d0f1a", minHeight: "100vh", maxWidth: 430, margin: "0 auto" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
@@ -1020,50 +1020,50 @@ export default function SwapApp() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{ background: "#e8eaf0", padding: "12px 16px 10px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 24px rgba(0,0,0,.35)" }}>
+      <div style={{ background: "#0d0f1a", padding: "12px 16px 10px", position: "sticky", top: 0, zIndex: 100, boxShadow: "0 2px 24px rgba(0,0,0,.35)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
           <div onClick={() => setView("list")} style={{ display: "flex", alignItems: "center", gap: 7, cursor: "pointer" }}>
             <div style={{ width: 27, height: 27, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: 7, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>⟳</div>
-            <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 19, color: "#0f1117", letterSpacing: -.5 }}>Swap<span style={{ color: "#7c6aff" }}>ru</span></span>
+            <span style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 19, color: "#e8eaf0", letterSpacing: -.5 }}>Swap<span style={{ color: "#7c6aff" }}>ru</span></span>
           </div>
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
             <button onClick={() => setView("messages")} style={{ background: "none", border: "none", cursor: "pointer", position: "relative" }}>
-              <span style={{ color: "#0f1117", fontSize: 20 }}>💬</span>
+              <span style={{ color: "#e8eaf0", fontSize: 20 }}>💬</span>
               {totalUnread > 0 && <div style={{ position: "absolute", top: -2, right: -4, background: "#ef4444", borderRadius: "50%", width: 16, height: 16, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{totalUnread}</div>}
             </button>
             <div style={{ width: 30, height: 30, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 12, cursor: "pointer" }} onClick={() => setView("mypage")}>{user?.avatar}</div>
           </div>
         </div>
-        <div style={{ background: "#2a1f10", borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ background: "#1a1d2e", borderRadius: 10, padding: "8px 12px", display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ color: "#6b7280", fontSize: 14 }}>🔍</span>
           <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="商品名・欲しいもので検索..." style={{ background: "none", border: "none", color: "#e8eaf0", fontSize: 13, flex: 1 }} />
           {searchQuery && <button onClick={() => setSearchQuery("")} style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer" }}>✕</button>}
         </div>
       </div>
 
-      <div style={{ paddingBottom: 82, minHeight: "100vh", background: "#0f1117" }}>
+      <div style={{ paddingBottom: 82, minHeight: "100vh", background: "#0d0f1a" }}>
 
         {/* ════ HOME ════ */}
         {view === "home" && (
           <div className="fi">
             {/* ヒーローバナー */}
-            <div style={{ background: "linear-gradient(135deg,#1a1208 0%,#3d2b15 55%,#1a1208 100%)", padding: "22px 16px 18px", position: "relative", overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg,#0d0f1a 0%,#1a1d2e 55%,#0d0f1a 100%)", padding: "22px 16px 18px", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: -30, right: -30, width: 180, height: 180, background: "radial-gradient(circle,rgba(212,165,116,.18) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
               <div style={{ position: "absolute", bottom: -20, left: -20, width: 120, height: 120, background: "radial-gradient(circle,rgba(212,165,116,.1) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
-              <p style={{ color: "#d4a574", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>手数料ゼロ · 完全無料</p>
-              <h2 style={{ color: "#f0ede8", fontSize: 22, fontWeight: 900, lineHeight: 1.3, marginBottom: 10 }}>不要なものを<br /><span style={{ color: "#d4a574" }}>価値ある交換へ</span></h2>
+              <p style={{ color: "#7c6aff", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>手数料ゼロ · 完全無料</p>
+              <h2 style={{ color: "#f0ede8", fontSize: 22, fontWeight: 900, lineHeight: 1.3, marginBottom: 10 }}>不要なものを<br /><span style={{ color: "#7c6aff" }}>価値ある交換へ</span></h2>
               <p style={{ color: "#8a7a6a", fontSize: 12, marginBottom: 14, lineHeight: 1.6 }}>お金を使わずに、あなたの不用品を<br />誰かの「欲しい」に変えよう。</p>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "#d4a574", border: "none", borderRadius: 9, padding: "10px 18px", color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品を探す →</button>
-                <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "rgba(212,165,116,.15)", border: "1px solid rgba(212,165,116,.4)", borderRadius: 9, padding: "10px 18px", color: "#d4a574", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品する ➕</button>
+                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "#7c6aff", border: "none", borderRadius: 9, padding: "10px 18px", color: "#e8eaf0", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品を探す →</button>
+                <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "rgba(212,165,116,.15)", border: "1px solid rgba(212,165,116,.4)", borderRadius: 9, padding: "10px 18px", color: "#7c6aff", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品する ➕</button>
               </div>
             </div>
 
             {/* 統計バー */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#d4c4a8", marginBottom: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#252840", marginBottom: 14 }}>
               {[[`${allItems.filter(i=>i.status!=="交換済み").length}`, "出品数"], [`${likedItems.length}`, "お気に入り"], ["¥0", "手数料"]].map(([n, l]) => (
-                <div key={l} style={{ background: "#f7f4ef", padding: "11px 0", textAlign: "center" }}>
-                  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#1a1208" }}>{n}</div>
+                <div key={l} style={{ background: "#1a1d2e", padding: "11px 0", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#0d0f1a" }}>{n}</div>
                   <div style={{ fontSize: 9, color: "#8a7a6a", marginTop: 1 }}>{l}</div>
                 </div>
               ))}
@@ -1071,13 +1071,13 @@ export default function SwapApp() {
 
             {/* 使い方3ステップ */}
             <div style={{ margin: "0 14px 14px", background: "#fff", borderRadius: 14, padding: "14px 14px", boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", marginBottom: 12, letterSpacing: 1 }}>✦ Swapruの使い方</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#e8eaf0", marginBottom: 12, letterSpacing: 1 }}>Swapruの使い方</p>
               <div style={{ display: "flex", gap: 0, position: "relative" }}>
-                <div style={{ position: "absolute", top: 18, left: "16.5%", right: "16.5%", height: 2, background: "linear-gradient(90deg,#d4a574,#c4813a)", zIndex: 0 }} />
+                <div style={{ position: "absolute", top: 18, left: "16.5%", right: "16.5%", height: 2, background: "linear-gradient(90deg,#7c6aff,#6a58f0)", zIndex: 0 }} />
                 {[["📦","出品する","不用品を写真付きで投稿"],["⟳","マッチ","交換希望が合う人を探す"],["🎉","成立！","チャットで詳細を決めて交換"]].map(([icon, title, desc], i) => (
                   <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, position: "relative", zIndex: 1 }}>
-                    <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, boxShadow: "0 3px 10px rgba(212,165,116,.4)" }}>{icon}</div>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", textAlign: "center" }}>{title}</p>
+                    <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, boxShadow: "0 3px 10px rgba(212,165,116,.4)" }}>{icon}</div>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#e8eaf0", textAlign: "center" }}>{title}</p>
                     <p style={{ fontSize: 9, color: "#8a7a6a", textAlign: "center", lineHeight: 1.4 }}>{desc}</p>
                   </div>
                 ))}
@@ -1090,11 +1090,11 @@ export default function SwapApp() {
             {/* キーワードマッチ */}
             {matchedItems.length > 0 && (
               <div style={{ margin: "0 14px 12px" }}>
-                <div style={{ background: "linear-gradient(135deg,#1a1208,#2d2010)", borderRadius: 14, padding: 13, border: "2px solid rgba(212,165,116,.3)" }}>
-                  <p style={{ color: "#d4a574", fontSize: 9, fontWeight: 700, letterSpacing: 2, marginBottom: 3 }}>✦ キーワードマッチ</p>
+                <div style={{ background: "linear-gradient(135deg,#0d0f1a,#1a1d2e)", borderRadius: 14, padding: 13, border: "2px solid rgba(212,165,116,.3)" }}>
+                  <p style={{ color: "#7c6aff", fontSize: 9, fontWeight: 700, letterSpacing: 2, marginBottom: 3 }}>✦ キーワードマッチ</p>
                   <p style={{ color: "#f0ede8", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{matchedItems.length}人があなたの出品物のキーワードを求めています</p>
                   <p style={{ color: "#6a5a4a", fontSize: 9, marginBottom: 8, fontStyle: "italic" }}>※ 自分でザッピングして確認しよう</p>
-                  <button onClick={() => setView("match")} className="bp" style={{ width: "100%", background: "rgba(212,165,116,.18)", border: "1px solid rgba(212,165,116,.35)", borderRadius: 8, padding: 8, color: "#d4a574", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>一覧を見る ({matchedItems.length}件) →</button>
+                  <button onClick={() => setView("match")} className="bp" style={{ width: "100%", background: "rgba(212,165,116,.18)", border: "1px solid rgba(212,165,116,.35)", borderRadius: 8, padding: 8, color: "#7c6aff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>一覧を見る ({matchedItems.length}件) →</button>
                 </div>
               </div>
             )}
@@ -1102,15 +1102,15 @@ export default function SwapApp() {
             {/* 新着出品 or 空状態 */}
             <div style={{ padding: "0 14px 10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1208" }}>🔥 新着出品</p>
-                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0" }}>新着出品</p>
+                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#6a58f0", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
               </div>
               {allItems.filter(item => item.status !== "交換済み" && item.ownerUid !== user?.uid && item.owner !== user?.name).length === 0 ? (
                 <div style={{ background: "#fff", borderRadius: 14, padding: "28px 20px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <div style={{ fontSize: 44, marginBottom: 10 }}>📭</div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1208", marginBottom: 6 }}>まだ出品がありません</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0", marginBottom: 6 }}>まだ出品がありません</p>
                   <p style={{ fontSize: 12, color: "#8a7a6a", marginBottom: 16, lineHeight: 1.6 }}>最初の出品者になってみよう！<br />不用品を交換に出すだけでOK。</p>
-                  <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: "11px 24px", color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>➕ 最初に出品する</button>
+                  <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 12, padding: "11px 24px", color: "#e8eaf0", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>最初に出品する</button>
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
@@ -1120,8 +1120,8 @@ export default function SwapApp() {
             </div>
 
             {/* 安心ポイント */}
-            <div style={{ margin: "4px 14px 14px", background: "linear-gradient(135deg,#1a1208,#3d2b15)", borderRadius: 14, padding: "14px 16px" }}>
-              <p style={{ color: "#d4a574", fontSize: 10, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>✦ SWAPRU の安心ポイント</p>
+            <div style={{ margin: "4px 14px 14px", background: "linear-gradient(135deg,#0d0f1a,#1a1d2e)", borderRadius: 14, padding: "14px 16px" }}>
+              <p style={{ color: "#7c6aff", fontSize: 10, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>✦ SWAPRU の安心ポイント</p>
               {[["⟳","完全無料","出品・交換・メッセージ、すべて0円"],["🛡️","相互評価","取引後のレビューで信頼を可視化"],["💬","丁寧なチャット","成立まで直接メッセージで交渉できる"]].map(([icon, title, desc]) => (
                 <div key={title} style={{ display: "flex", gap: 11, alignItems: "center", marginBottom: 10 }}>
                   <div style={{ width: 36, height: 36, background: "rgba(212,165,116,.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{icon}</div>
@@ -1138,13 +1138,13 @@ export default function SwapApp() {
         {/* ════ LIST ════ */}
         {view === "list" && (
           <div className="fi">
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#e8eaf0", borderBottom: "1px solid #2a1f10" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", background: "#0d0f1a", borderBottom: "1px solid #2a1f10" }}>
               {[["offer", "🔥 出品一覧"]].map(([tab, label]) => (
                 <button key={tab} onClick={() => setListTab(tab)} className="bp" style={{ background: "none", border: "none", padding: "11px 0", fontWeight: 700, fontSize: 13, color: listTab === tab ? "#7c6aff" : "#8892aa", cursor: "pointer", borderBottom: listTab === tab ? "2px solid #7c6aff" : "2px solid transparent" }}>{label}</button>
               ))}
             </div>
             <div style={{ padding: "8px 12px 4px", display: "flex", overflowX: "auto", gap: 6 }}>
-              {CATEGORIES.map(cat => <button key={cat} onClick={() => setSelectedCategory(cat)} className="bp" style={{ flexShrink: 0, background: selectedCategory === cat ? "#e8eaf0" : "#fff", border: `1px solid ${selectedCategory === cat ? "#e8eaf0" : "#252836"}`, borderRadius: 20, padding: "5px 11px", fontSize: 11, fontWeight: 600, color: selectedCategory === cat ? "#7c6aff" : "#a0a8c0", cursor: "pointer" }}>{cat}</button>)}
+              {CATEGORIES.map(cat => <button key={cat} onClick={() => setSelectedCategory(cat)} className="bp" style={{ flexShrink: 0, background: selectedCategory === cat ? "#7c6aff" : "#fff", border: `1px solid ${selectedCategory === cat ? "#e8eaf0" : "#252840"}`, borderRadius: 20, padding: "5px 11px", fontSize: 11, fontWeight: 600, color: selectedCategory === cat ? "#7c6aff" : "#a0a8c0", cursor: "pointer" }}>{cat}</button>)}
             </div>
             {listTab === "offer" && (
               <div style={{ padding: "4px 14px" }}>
@@ -1161,7 +1161,7 @@ export default function SwapApp() {
         {view === "detail" && selectedItem && (
           <div className="au">
             <button onClick={() => setView("list")} style={{ margin: "12px 14px 0", background: "none", border: "none", color: "#a0a8c0", fontSize: 12, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>← 戻る</button>
-            <div style={{ background: "#1e2130", margin: "9px 14px", borderRadius: 17, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}>
+            <div style={{ background: "#1a1d2e", margin: "9px 14px", borderRadius: 17, overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,.08)" }}>
               <div style={{ background: "linear-gradient(135deg,#1a1d27,#252836)", height: 180, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 76, position: "relative" }}>
                 {selectedItem.imageUrls?.[0] ? <img src={selectedItem.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : selectedItem.image}
                 <button onClick={e => toggleLike(selectedItem.id, e)} style={{ position: "absolute", bottom: 9, right: 9, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 36, height: 36, fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>{likedItems.includes(selectedItem.id) ? "❤️" : "🤍"}</button>
@@ -1169,8 +1169,8 @@ export default function SwapApp() {
               <div style={{ padding: "15px 15px 17px" }}>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#e8eaf0", lineHeight: 1.3, marginBottom: 7 }}>{selectedItem.title}</h2>
                 <div style={{ display: "flex", gap: 5, marginBottom: 11, flexWrap: "wrap" }}>
-                  <span style={{ background: "#0f1117", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{selectedItem.category}</span>
-                  {selectedItem.subCategory && <span style={{ background: "#252836", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{selectedItem.subCategory}</span>}
+                  <span style={{ background: "#0d0f1a", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{selectedItem.category}</span>
+                  {selectedItem.subCategory && <span style={{ background: "#252840", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{selectedItem.subCategory}</span>}
                   <span style={{ background: "#e8f5e9", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, color: "#2e7d32" }}>{selectedItem.condition}</span>
                 </div>
                 {selectedItem.category === "🎁 お中元・お歳暮" && (selectedItem.expiryDate || selectedItem.shippingNote) && (
@@ -1180,9 +1180,9 @@ export default function SwapApp() {
                     {selectedItem.shippingNote && <p style={{ fontSize: 11, color: "#a0a8c0" }}>🚚 発送・保存：<span style={{ fontWeight: 700, color: selectedItem.shippingNote === "常温OK" ? "#16a34a" : "#d97706" }}>{selectedItem.shippingNote}</span></p>}
                   </div>
                 )}
-                <div style={{ background: "#1a1d27", borderRadius: 12, padding: 12, marginBottom: 11 }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 12, padding: 12, marginBottom: 11 }}>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#6a58f0", marginBottom: 6 }}>↔ 交換希望</p>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{selectedItem.wantItems?.map(w => <span key={w} style={{ background: "#1e2130", border: "1px solid #252836", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: "#c8d0e0" }}>{w}</span>)}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>{selectedItem.wantItems?.map(w => <span key={w} style={{ background: "#1a1d2e", border: "1px solid #252836", borderRadius: 20, padding: "4px 10px", fontSize: 11, fontWeight: 600, color: "#c8d0e0" }}>{w}</span>)}</div>
                 </div>
                 <div style={{ marginBottom: 12 }}>
                   <p style={{ fontSize: 9, color: "#6b7280", fontWeight: 600, letterSpacing: 1, marginBottom: 5 }}>PR · おすすめ</p>
@@ -1198,7 +1198,7 @@ export default function SwapApp() {
                       setOwnerReviews(snap.docs.map(d => d.data()));
                     } catch(e) {}
                   }
-                }} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer", background: "#1a1d27", borderRadius: 12, padding: "9px 12px" }}>
+                }} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer", background: "#1a1d2e", borderRadius: 12, padding: "9px 12px" }}>
                   <div style={{ width: 34, height: 34, background: "#7c6aff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 12 }}>{selectedItem.ownerAvatar}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontSize: 12, fontWeight: 600, color: "#e8eaf0" }}>{selectedItem.owner}</p>
@@ -1207,10 +1207,10 @@ export default function SwapApp() {
                   <p style={{ fontSize: 10, color: "#6a58f0", fontWeight: 600 }}>プロフを見る →</p>
                 </div>
                 <button onClick={() => { setShowTradeModal(selectedItem); setSelectedMyItem(null); }} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 12, padding: 13, color: "#e8eaf0", fontWeight: 700, fontSize: 14, cursor: "pointer", marginBottom: 7 }}>⟳ 交換を申し込む（無料）</button>
-                <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#1e2130", border: "1px solid #252836", borderRadius: 12, padding: 11, color: "#a0a8c0", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 7 }}>
+                <button onClick={() => handleShare(selectedItem)} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "1px solid #252836", borderRadius: 12, padding: 11, color: "#a0a8c0", fontWeight: 600, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 7 }}>
                   <span>📤</span>
                   <span>シェアする</span>
-                  <span style={{ background: "#0f1117", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#6a58f0", fontWeight: 700 }}>3回で上位権利GET</span>
+                  <span style={{ background: "#0d0f1a", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#6a58f0", fontWeight: 700 }}>3回で上位権利GET</span>
                 </button>
                 <button onClick={() => { setShowReportModal(selectedItem); setReportReason(""); }} className="bp" style={{ width: "100%", background: "none", border: "none", padding: "6px 0", color: "#4a5068", fontSize: 11, cursor: "pointer" }}>🚨 この出品を通報する</button>
               </div>
@@ -1230,7 +1230,7 @@ export default function SwapApp() {
               <div style={{ margin: "0 14px 12px" }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#6a58f0", letterSpacing: 1, marginBottom: 7 }}>📨 申し込み</p>
                 {applications.filter(a => (a.status === "申し込み中" || a.status === "保留中") && a.applicantUid !== user?.uid).map(app => (
-                  <div key={app.id} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+                  <div key={app.id} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
                       <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{app.applicant?.charAt(0)}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1241,10 +1241,10 @@ export default function SwapApp() {
                         <p style={{ fontSize: 11, color: "#6b7280" }}>{app.myItemImage?.startsWith("http") ? "📦" : app.myItemImage} {app.myItemTitle} → {app.itemImage?.startsWith("http") ? "📦" : app.itemImage} {app.itemTitle}</p>
                       </div>
                     </div>
-                    {app.message && <p style={{ fontSize: 11, color: "#a0a8c0", background: "#1a1d27", borderRadius: 9, padding: "8px 10px", marginBottom: 10 }}>「{app.message}」</p>}
+                    {app.message && <p style={{ fontSize: 11, color: "#a0a8c0", background: "#1a1d2e", borderRadius: 9, padding: "8px 10px", marginBottom: 10 }}>「{app.message}」</p>}
                     <div style={{ display: "flex", gap: 7 }}>
                       <button onClick={() => respondToApplication(app.id, "交渉する")} className="bp" style={{ flex: 2, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#e8eaf0", cursor: "pointer" }}>🤝 交渉する</button>
-                      <button onClick={() => respondToApplication(app.id, "保留")} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>📋 保留</button>
+                      <button onClick={() => respondToApplication(app.id, "保留")} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>📋 保留</button>
                       <button onClick={() => respondToApplication(app.id, "ごめんなさい")} className="bp" style={{ flex: 1, background: "#fef2f2", border: "none", borderRadius: 9, padding: "9px 0", fontSize: 12, fontWeight: 700, color: "#ef4444", cursor: "pointer" }}>🙏 ごめん</button>
                     </div>
                   </div>
@@ -1256,7 +1256,7 @@ export default function SwapApp() {
               <div style={{ margin: "0 14px 12px" }}>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 1, marginBottom: 7 }}>📤 申し込み中</p>
                 {applications.filter(a => a.applicantUid === user?.uid && a.status === "申し込み中").map(app => (
-                  <div key={app.id} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)", display: "flex", gap: 10, alignItems: "center" }}>
+                  <div key={app.id} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)", display: "flex", gap: 10, alignItems: "center" }}>
                     <div style={{ fontSize: 24 }}>{app.itemImage?.startsWith("http") ? <img src={app.itemImage} style={{ width: 32, height: 32, objectFit: "cover", borderRadius: 6 }} /> : app.itemImage}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 12, color: "#e8eaf0", marginBottom: 2 }}>{app.itemTitle}</p>
@@ -1270,7 +1270,7 @@ export default function SwapApp() {
 
             {threads.filter(t => t.tradeStatus !== "完了" && t.tradeStatus !== "キャンセル").length > 0 && <p style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", letterSpacing: 1, margin: "0 14px 7px" }}>💬 チャット</p>}
             {threads.filter(t => t.tradeStatus !== "完了" && t.tradeStatus !== "キャンセル").map((thread, i) => (
-              <div key={thread.id} className="ph au" style={{ background: "#1e2130", margin: "0 14px 8px", borderRadius: 14, padding: 13, display: "flex", gap: 11, alignItems: "center", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animationDelay: `${i * 55}ms`, position: "relative" }} onClick={() => openChat(thread)}>
+              <div key={thread.id} className="ph au" style={{ background: "#1a1d2e", margin: "0 14px 8px", borderRadius: 14, padding: 13, display: "flex", gap: 11, alignItems: "center", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animationDelay: `${i * 55}ms`, position: "relative" }} onClick={() => openChat(thread)}>
                 {thread.unread > 0 && <div style={{ position: "absolute", top: 10, right: 10, background: "#ef4444", borderRadius: "50%", width: 18, height: 18, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff" }}>{thread.unread}</div>}
                 <div style={{ width: 46, height: 46, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>{thread.partnerAvatar}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -1304,21 +1304,21 @@ export default function SwapApp() {
             {matchedItems.map((item, i) => {
               const reasons = getMatchReasons(item, myItems, profileForm.wantKeywords);
               return (
-                <div key={item.id} className="au" style={{ background: "#1e2130", borderRadius: 14, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animationDelay: `${i * 50}ms` }}>
-                  <div style={{ background: "#1a1730", padding: "8px 13px", borderBottom: "1px solid #0f1117", display: "flex", gap: 5, flexWrap: "wrap" }}>
+                <div key={item.id} className="au" style={{ background: "#1a1d2e", borderRadius: 14, marginBottom: 10, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", animationDelay: `${i * 50}ms` }}>
+                  <div style={{ background: "#1a1d2e", padding: "8px 13px", borderBottom: "1px solid #0f1117", display: "flex", gap: 5, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 10, fontWeight: 700, color: "#6a58f0" }}>🎯</span>
-                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#1e2130", border: "1px solid #252836", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#c8d0e0" }}>{r.myImage?.startsWith?.("http") ? "📦" : r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#6a58f0" }}>「{r.want}」</span></span>)}
+                    {reasons.map((r, ri) => <span key={ri} style={{ background: "#1a1d2e", border: "1px solid #252836", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#c8d0e0" }}>{r.myImage?.startsWith?.("http") ? "📦" : r.myImage} {r.myItem.split(" ")[0]} → <span style={{ color: "#6a58f0" }}>「{r.want}」</span></span>)}
                   </div>
                   <div style={{ padding: 12, display: "flex", gap: 10, cursor: "pointer" }} onClick={() => openDetail(item)}>
                     <div style={{ width: 62, height: 62, background: "linear-gradient(135deg,#1a1d27,#252836)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontWeight: 700, fontSize: 13, color: "#e8eaf0", marginBottom: 4 }}>{item.title}</p>
-                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{item.wantItems.map(w => <span key={w} style={{ background: reasons.some(r => r.want === w) ? "#fef3c7" : "#1a1d27", border: `1px solid ${reasons.some(r => r.want === w) ? "#fcd34d" : "#252836"}`, borderRadius: 20, padding: "2px 7px", fontSize: 10, fontWeight: 600, color: reasons.some(r => r.want === w) ? "#d97706" : "#c8d0e0" }}>{w}</span>)}</div>
+                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{item.wantItems.map(w => <span key={w} style={{ background: reasons.some(r => r.want === w) ? "#fef3c7" : "#1a1d2e", border: `1px solid ${reasons.some(r => r.want === w) ? "#fcd34d" : "#252840"}`, borderRadius: 20, padding: "2px 7px", fontSize: 10, fontWeight: 600, color: reasons.some(r => r.want === w) ? "#d97706" : "#c8d0e0" }}>{w}</span>)}</div>
                     </div>
                   </div>
                   <div style={{ padding: "0 12px 12px", display: "flex", gap: 7 }}>
                     <button onClick={() => { setShowTradeModal(item); setSelectedMyItem(null); }} className="bp" style={{ flex: 1, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 9, padding: 9, color: "#e8eaf0", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>⟳ 交換申し込む</button>
-                    <button onClick={e => toggleLike(item.id, e)} className="bp" style={{ width: 38, background: "#0f1117", border: "none", borderRadius: 9, fontSize: 16, cursor: "pointer" }}>{likedItems.includes(item.id) ? "❤️" : "🤍"}</button>
+                    <button onClick={e => toggleLike(item.id, e)} className="bp" style={{ width: 38, background: "#0d0f1a", border: "none", borderRadius: 9, fontSize: 16, cursor: "pointer" }}>{likedItems.includes(item.id) ? "❤️" : "🤍"}</button>
                   </div>
                 </div>
               );
@@ -1330,7 +1330,7 @@ export default function SwapApp() {
         {/* ════ MYPAGE ════ */}
         {view === "mypage" && (
           <div className="fi" style={{ width: "100%" }}>
-            <div style={{ background: "linear-gradient(135deg,#e8eaf0,#c8d0e0)", padding: "20px 16px", color: "#0f1117" }}>
+            <div style={{ background: "linear-gradient(135deg,#1a1d2e,#252840)", padding: "20px 16px", color: "#e8eaf0" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 16 }}>
                 <div style={{ width: 56, height: 56, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 700, flexShrink: 0 }}>{user?.avatar}</div>
                 <div style={{ flex: 1 }}>
@@ -1353,7 +1353,7 @@ export default function SwapApp() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", background: "#1e2130", borderBottom: "1px solid #252836" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", background: "#1a1d2e", borderBottom: "1px solid #252836" }}>
               {[["listings", "📦 出品"], ["favorites", "❤️ お気に入り"], ["history", "🔄 履歴"], ["settings", "⚙ 設定"]].map(([tab, label]) => (
                 <button key={tab} onClick={() => setMypageTab(tab)} className="bp" style={{ background: "none", border: "none", padding: "11px 0", fontWeight: 700, fontSize: 12, color: mypageTab === tab ? "#6a58f0" : "#6b7280", cursor: "pointer", borderBottom: mypageTab === tab ? "2px solid #6a58f0" : "2px solid transparent" }}>{label}</button>
               ))}
@@ -1372,14 +1372,14 @@ export default function SwapApp() {
                     <p style={{ fontSize: 12, marginTop: 4 }}>上のボタンから出品してみよう！</p>
                   </div>
                 ) : myItems.filter(i => i.status !== "交換済み").map(item => (
-                  <div key={item.id} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                  <div key={item.id} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 10 }}>
                       <div style={{ width: 54, height: 54, background: "linear-gradient(135deg,#1a1d27,#252836)", borderRadius: 10, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, flexShrink: 0 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ fontWeight: 700, fontSize: 13, color: "#e8eaf0", marginBottom: 3 }}>{item.title}</p>
                         <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 4 }}>
-                          <span style={{ background: "#0f1117", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{item.category}</span>
-                          <span style={{ background: "#0f1117", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#a0a8c0" }}>{item.condition}</span>
+                          <span style={{ background: "#0d0f1a", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600, color: "#a0a8c0" }}>{item.category}</span>
+                          <span style={{ background: "#0d0f1a", borderRadius: 20, padding: "2px 8px", fontSize: 10, color: "#a0a8c0" }}>{item.condition}</span>
                         </div>
                         <div style={{ display: "flex", gap: 10, fontSize: 10, color: "#6b7280" }}>
                           <span>👁 {item.views}</span><span>❤️ {item.likes}</span>
@@ -1387,16 +1387,16 @@ export default function SwapApp() {
                       </div>
                       <span style={{ background: item.status === "出品中" ? "#dcfce7" : item.status === "交換中" ? "#fef3c7" : "#f3f4f6", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: item.status === "出品中" ? "#16a34a" : item.status === "交換中" ? "#d97706" : "#6b7280", flexShrink: 0 }}>{item.status}</span>
                     </div>
-                    <div style={{ background: "#1a1d27", borderRadius: 9, padding: "7px 10px", marginBottom: 10 }}>
+                    <div style={{ background: "#1a1d2e", borderRadius: 9, padding: "7px 10px", marginBottom: 10 }}>
                       <p style={{ fontSize: 10, color: "#6a58f0", fontWeight: 700, marginBottom: 3 }}>↔ 交換希望</p>
                       <p style={{ fontSize: 11, color: "#a0a8c0" }}>{item.wantItems?.join("・")}</p>
                     </div>
                     <div style={{ display: "flex", gap: 7, marginBottom: 7 }}>
-                      <button onClick={() => { setEditingItem(item); setPostForm({ title: item.title, category: item.category, condition: item.condition, detail: "", wantItems: item.wantItems?.join("、"), image: item.image }); setPostType("offer"); setShowPostModal(true); }} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 9, padding: "8px 0", color: "#a0a8c0", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>✏️ 編集</button>
-                      <button onClick={() => toggleItemStatus(item)} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 9, padding: "8px 0", color: item.status === "非公開" ? "#16a34a" : "#d97706", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>{item.status === "非公開" ? "👁 公開する" : "🙈 非公開"}</button>
+                      <button onClick={() => { setEditingItem(item); setPostForm({ title: item.title, category: item.category, condition: item.condition, detail: "", wantItems: item.wantItems?.join("、"), image: item.image }); setPostType("offer"); setShowPostModal(true); }} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 9, padding: "8px 0", color: "#a0a8c0", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>✏️ 編集</button>
+                      <button onClick={() => toggleItemStatus(item)} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 9, padding: "8px 0", color: item.status === "非公開" ? "#16a34a" : "#d97706", fontWeight: 600, fontSize: 11, cursor: "pointer" }}>{item.status === "非公開" ? "👁 公開する" : "🙈 非公開"}</button>
                       <button onClick={() => setConfirmDialog({ message: `「${item.title}」を削除しますか？`, onOk: () => deleteMyItem(item) })} className="bp" style={{ width: 38, background: "#fef2f2", border: "none", borderRadius: 9, color: "#ef4444", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>🗑</button>
                     </div>
-                    <button onClick={() => handleBoost(item.id)} className="bp" style={{ width: "100%", background: boostedItemId === item.id ? "linear-gradient(135deg,#fbbf24,#f59e0b)" : boostCredits > 0 ? "linear-gradient(135deg,#e8eaf0,#c8d0e0)" : "#0f1117", border: "none", borderRadius: 9, padding: "8px 0", color: boostedItemId === item.id ? "#e8eaf0" : boostCredits > 0 ? "#7c6aff" : "#4a5068", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                    <button onClick={() => handleBoost(item.id)} className="bp" style={{ width: "100%", background: boostedItemId === item.id ? "linear-gradient(135deg,#fbbf24,#f59e0b)" : boostCredits > 0 ? "linear-gradient(135deg,#1a1d2e,#252840)" : "#0d0f1a", border: "none", borderRadius: 9, padding: "8px 0", color: boostedItemId === item.id ? "#e8eaf0" : boostCredits > 0 ? "#7c6aff" : "#4a5068", fontWeight: 700, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
                       {boostedItemId === item.id ? "🚀 上位表示中（48h）" : boostCredits > 0 ? `🚀 上位表示する（権利 ${boostCredits}/2）` : "🚀 上位表示（シェア3回でGET）"}
                     </button>
                   </div>
@@ -1420,7 +1420,7 @@ export default function SwapApp() {
                 ) : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                     {allItems.filter(item => likedItems.includes(item.id) || likedItems.includes(String(item.id))).map(item => (
-                      <div key={item.id} onClick={() => openDetail(item)} className="ph" style={{ background: "#1e2130", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+                      <div key={item.id} onClick={() => openDetail(item)} className="ph" style={{ background: "#1a1d2e", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
                         <div style={{ height: 90, background: "linear-gradient(135deg,#1a1d27,#252836)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                           {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
                           <button onClick={e => toggleLike(item.id, e)} style={{ position: "absolute", top: 5, right: 5, background: "rgba(255,255,255,.15)", border: "none", borderRadius: "50%", width: 26, height: 26, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>❤️</button>
@@ -1441,18 +1441,18 @@ export default function SwapApp() {
               <div style={{ padding: 14, width: "100%" }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#6a58f0", letterSpacing: 1, marginBottom: 9 }}>⏳ 進行中</p>
                 {threads.filter(t => t.status === "交渉中").length === 0 ? (
-                  <div style={{ background: "#1e2130", borderRadius: 12, padding: "20px", textAlign: "center", color: "#6b7280", marginBottom: 18 }}>
+                  <div style={{ background: "#1a1d2e", borderRadius: 12, padding: "20px", textAlign: "center", color: "#6b7280", marginBottom: 18 }}>
                     <p style={{ fontSize: 13 }}>進行中の取引はありません</p>
                   </div>
                 ) : threads.filter(t => t.status === "交渉中").map(t => (
-                  <div key={t.id} onClick={() => openChat(t)} className="ph" style={{ background: "#1e2130", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)", border: "1px solid #fcd34d" }}>
+                  <div key={t.id} onClick={() => openChat(t)} className="ph" style={{ background: "#1a1d2e", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)", border: "1px solid #fcd34d" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
-                      <div style={{ flex: 1, background: "#1a1d27", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                      <div style={{ flex: 1, background: "#1a1d2e", borderRadius: 10, padding: "9px", textAlign: "center" }}>
                         <div style={{ fontSize: 24 }}>{t.myItemImage}</div>
                         <p style={{ fontSize: 9, fontWeight: 600, color: "#e8eaf0", marginTop: 2 }}>{t.myItem}</p>
                       </div>
                       <div style={{ color: "#7c6aff", fontSize: 18, fontWeight: 700 }}>⟳</div>
-                      <div style={{ flex: 1, background: "#1a1d27", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                      <div style={{ flex: 1, background: "#1a1d2e", borderRadius: 10, padding: "9px", textAlign: "center" }}>
                         <div style={{ fontSize: 24 }}>{t.partnerItemImage}</div>
                         <p style={{ fontSize: 9, fontWeight: 600, color: "#e8eaf0", marginTop: 2 }}>{t.partnerItem}</p>
                       </div>
@@ -1466,14 +1466,14 @@ export default function SwapApp() {
 
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#16a34a", letterSpacing: 1, marginBottom: 9, marginTop: 4 }}>✅ 完了済み</p>
                 {threads.filter(t => t.tradeStatus === "完了" || t.status === "交換成立").map(t => (
-                  <div key={t.id} style={{ background: "#1e2130", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                  <div key={t.id} style={{ background: "#1a1d2e", borderRadius: 14, padding: 13, marginBottom: 9, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 9 }}>
-                      <div style={{ flex: 1, background: "#1a1d27", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                      <div style={{ flex: 1, background: "#1a1d2e", borderRadius: 10, padding: "9px", textAlign: "center" }}>
                         <div style={{ fontSize: 24 }}>{t.myItemImage}</div>
                         <p style={{ fontSize: 9, fontWeight: 600, color: "#e8eaf0", marginTop: 2 }}>{t.myItem}</p>
                       </div>
                       <div style={{ color: "#7c6aff", fontSize: 18, fontWeight: 700 }}>⟳</div>
-                      <div style={{ flex: 1, background: "#1a1d27", borderRadius: 10, padding: "9px", textAlign: "center" }}>
+                      <div style={{ flex: 1, background: "#1a1d2e", borderRadius: 10, padding: "9px", textAlign: "center" }}>
                         <div style={{ fontSize: 24 }}>{t.partnerItemImage}</div>
                         <p style={{ fontSize: 9, fontWeight: 600, color: "#e8eaf0", marginTop: 2 }}>{t.partnerItem}</p>
                       </div>
@@ -1490,7 +1490,7 @@ export default function SwapApp() {
             {/* ── 設定タブ ── */}
             {mypageTab === "settings" && (
               <div style={{ padding: 14, width: "100%" }}>
-                <div style={{ background: "linear-gradient(135deg,#e8eaf0,#c8d0e0)", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 4px 16px rgba(0,0,0,.15)" }}>
+                <div style={{ background: "linear-gradient(135deg,#1a1d2e,#252840)", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 4px 16px rgba(0,0,0,.15)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#7c6aff", marginBottom: 12 }}>🚀 シェア＆上位表示</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
                     <div style={{ background: "rgba(255,255,255,.07)", borderRadius: 10, padding: 11, textAlign: "center" }}>
@@ -1512,7 +1512,7 @@ export default function SwapApp() {
                   </div>
                 </div>
 
-                <div style={{ background: "#1e2130", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0", marginBottom: 13 }}>👤 プロフィール</h3>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: 14 }}>
                     <div style={{ width: 70, height: 70, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: profileForm.avatarEmoji ? 36 : 28, fontWeight: 700, color: "#e8eaf0", marginBottom: 8, overflow: "hidden", flexShrink: 0 }}>
@@ -1531,11 +1531,11 @@ export default function SwapApp() {
                       } catch(e) { showToast("❌ アップロード失敗"); }
                     }} />
                     <div style={{ display: "flex", gap: 7, marginBottom: 8 }}>
-                      <button onClick={() => window._avatarInput?.click()} className="bp" style={{ background: "#0f1117", border: "none", borderRadius: 20, padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#a0a8c0", cursor: "pointer" }}>📷 写真</button>
-                      <button onClick={() => setProfileForm(f => ({ ...f, showEmojiPicker: !f.showEmojiPicker }))} className="bp" style={{ background: "#0f1117", border: "none", borderRadius: 20, padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#a0a8c0", cursor: "pointer" }}>😀 絵文字</button>
+                      <button onClick={() => window._avatarInput?.click()} className="bp" style={{ background: "#0d0f1a", border: "none", borderRadius: 20, padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#a0a8c0", cursor: "pointer" }}>📷 写真</button>
+                      <button onClick={() => setProfileForm(f => ({ ...f, showEmojiPicker: !f.showEmojiPicker }))} className="bp" style={{ background: "#0d0f1a", border: "none", borderRadius: 20, padding: "6px 12px", fontSize: 11, fontWeight: 600, color: "#a0a8c0", cursor: "pointer" }}>😀 絵文字</button>
                     </div>
                     {profileForm.showEmojiPicker && (
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1a1d27", borderRadius: 12, padding: 10, marginBottom: 8 }}>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, background: "#1a1d2e", borderRadius: 12, padding: 10, marginBottom: 8 }}>
                         {["😀","😎","🤩","🥳","😸","🐶","🐱","🦊","🐼","🐨","🦁","🐯","🐸","🐧","🦋","🌸","⭐","🎸","📷","🎮","🏄","🧗","🎨","🍕","☕"].map(em => (
                           <button key={em} onClick={() => setProfileForm(f => ({ ...f, avatarEmoji: em, avatarUrl: null, showEmojiPicker: false }))} style={{ width: 36, height: 36, background: "none", border: "none", fontSize: 22, cursor: "pointer", borderRadius: 8 }}>{em}</button>
                         ))}
@@ -1546,20 +1546,20 @@ export default function SwapApp() {
                     <div key={key} style={{ marginBottom: 12 }}>
                       <p style={{ fontSize: 11, fontWeight: 700, color: "#a0a8c0", marginBottom: 5 }}>{label}</p>
                       {key === "bio" ? (
-                        <textarea value={profileForm[key]} onChange={e => setProfileForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0", height: 72, resize: "none" }} />
+                        <textarea value={profileForm[key]} onChange={e => setProfileForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0", height: 72, resize: "none" }} />
                       ) : (
-                        <input value={profileForm[key]} onChange={e => setProfileForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0" }} />
+                        <input value={profileForm[key]} onChange={e => setProfileForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0" }} />
                       )}
                     </div>
                   ))}
                   <div style={{ marginBottom: 12 }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#a0a8c0", marginBottom: 5 }}>活動エリア</p>
-                    <select value={profileForm.location} onChange={e => setProfileForm(f => ({ ...f, location: e.target.value }))} disabled={profileForm.locationPrivate} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: profileForm.locationPrivate ? "#4a5068" : "#e8eaf0", cursor: "pointer", marginBottom: 7 }}>
+                    <select value={profileForm.location} onChange={e => setProfileForm(f => ({ ...f, location: e.target.value }))} disabled={profileForm.locationPrivate} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: profileForm.locationPrivate ? "#4a5068" : "#e8eaf0", cursor: "pointer", marginBottom: 7 }}>
                       {PREFECTURES.map(p => <option key={p} value={p}>{p}</option>)}
                     </select>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div onClick={() => setProfileForm(f => ({ ...f, locationPrivate: !f.locationPrivate }))} style={{ width: 36, height: 20, background: profileForm.locationPrivate ? "#7c6aff" : "#252836", borderRadius: 10, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
-                        <div style={{ position: "absolute", top: 2, left: profileForm.locationPrivate ? 17 : 2, width: 16, height: 16, background: "#1e2130", borderRadius: "50%", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
+                      <div onClick={() => setProfileForm(f => ({ ...f, locationPrivate: !f.locationPrivate }))} style={{ width: 36, height: 20, background: profileForm.locationPrivate ? "#7c6aff" : "#252840", borderRadius: 10, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
+                        <div style={{ position: "absolute", top: 2, left: profileForm.locationPrivate ? 17 : 2, width: 16, height: 16, background: "#1a1d2e", borderRadius: "50%", transition: "left .2s", boxShadow: "0 1px 3px rgba(0,0,0,.2)" }} />
                       </div>
                       <p style={{ fontSize: 11, color: "#6b7280" }}>エリアを非公開にする</p>
                     </div>
@@ -1567,10 +1567,10 @@ export default function SwapApp() {
                   <button onClick={saveProfile} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#7c6aff,#6a58f0)", border: "none", borderRadius: 11, padding: 12, color: "#e8eaf0", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>保存する</button>
                 </div>
 
-                <div style={{ background: "#1e2130", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0", marginBottom: 4 }}>🙋 欲しいもの（最大3つ）</h3>
                   <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 4 }}>キーワードマッチに使われます</p>
-                  <div style={{ background: "#1a1730", border: "1px solid #fcd34d", borderRadius: 9, padding: "8px 11px", marginBottom: 12 }}>
+                  <div style={{ background: "#1a1d2e", border: "1px solid #fcd34d", borderRadius: 9, padding: "8px 11px", marginBottom: 12 }}>
                     <p style={{ fontSize: 10, color: "#92400e" }}>💡 ブランド名+商品名で書くとマッチ精度が上がります</p>
                     <p style={{ fontSize: 10, color: "#92400e" }}>例）「コーヒーメーカー」より「シロカ コーヒーメーカー」</p>
                   </div>
@@ -1585,13 +1585,13 @@ export default function SwapApp() {
                           return { ...f, wantKeywords: kw };
                         })}
                         placeholder={["例）シロカ コーヒーメーカー", "例）Gibson レスポール", "例）Canon フィルムカメラ"][i]}
-                        style={{ flex: 1, background: "#1a1d27", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0" }}
+                        style={{ flex: 1, background: "#1a1d2e", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0" }}
                       />
                     </div>
                   ))}
                 </div>
 
-                <div style={{ background: "#1e2130", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0", marginBottom: 4 }}>🎯 気になるカテゴリ</h3>
                   <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 12 }}>最大3つ選択 · 欲しいリストの上位に表示されます</p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -1605,7 +1605,7 @@ export default function SwapApp() {
                             if (cur.length >= 3) { showToast("⚠️ 最大3つまで選択できます"); return f; }
                             return { ...f, preferredCategories: [...cur, cat] };
                           });
-                        }} className="bp" style={{ background: selected ? "#e8eaf0" : "#1a1d27", border: `2px solid ${selected ? "#7c6aff" : "transparent"}`, borderRadius: 20, padding: "7px 13px", fontSize: 12, fontWeight: 700, color: selected ? "#7c6aff" : "#a0a8c0", cursor: "pointer" }}>
+                        }} className="bp" style={{ background: selected ? "#e8eaf0" : "#1a1d2e", border: `2px solid ${selected ? "#7c6aff" : "transparent"}`, borderRadius: 20, padding: "7px 13px", fontSize: 12, fontWeight: 700, color: selected ? "#7c6aff" : "#a0a8c0", cursor: "pointer" }}>
                           {cat} {selected && "✓"}
                         </button>
                       );
@@ -1613,7 +1613,7 @@ export default function SwapApp() {
                   </div>
                 </div>
 
-                <div style={{ background: "#1e2130", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0", marginBottom: 13 }}>🔔 通知設定</h3>
                   {[["notify_message", "新しいメッセージ", "交渉中の相手からメッセージが届いたとき"], ["notify_match", "キーワードマッチ", "出品物のキーワードを求める人が現れたとき"], ["notify_news", "お知らせ", "アップデートや新機能のお知らせ"]].map(([key, label, desc]) => (
                     <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: "1px solid #0f1117" }}>
@@ -1632,27 +1632,27 @@ export default function SwapApp() {
                           } catch(e) { showToast("❌ 通知の設定に失敗しました"); return; }
                         }
                         setProfileForm(f => ({ ...f, [key]: newVal }));
-                      }} style={{ width: 44, height: 24, background: profileForm[key] ? "#7c6aff" : "#252836", borderRadius: 12, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
-                        <div style={{ position: "absolute", top: 3, left: profileForm[key] ? 22 : 3, width: 18, height: 18, background: "#1e2130", borderRadius: "50%", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,.2)" }} />
+                      }} style={{ width: 44, height: 24, background: profileForm[key] ? "#7c6aff" : "#252840", borderRadius: 12, position: "relative", cursor: "pointer", transition: "background .2s", flexShrink: 0 }}>
+                        <div style={{ position: "absolute", top: 3, left: profileForm[key] ? 22 : 3, width: 18, height: 18, background: "#1a1d2e", borderRadius: "50%", transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,.2)" }} />
                       </div>
                     </div>
                   ))}
                 </div>
 
-                <div style={{ background: "#1e2130", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 14, padding: 16, marginBottom: 12, boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
                   <h3 style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0", marginBottom: 13 }}>🔐 アカウント</h3>
-                  <div style={{ background: "#1a1d27", borderRadius: 10, padding: "11px 13px", marginBottom: 10 }}>
+                  <div style={{ background: "#1a1d2e", borderRadius: 10, padding: "11px 13px", marginBottom: 10 }}>
                     <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 2 }}>ログイン方法</p>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#e8eaf0" }}>{user?.method === "google" ? "🔵 Google アカウント" : "🟢 LINE アカウント"}</p>
                     {user?.email && <p style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{user.email}</p>}
                   </div>
-                  <button onClick={() => setLegalModal("faq")} className="bp" style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>❓ よくある質問（FAQ）</button>
-                  <button onClick={() => setLegalModal("terms")} className="bp" style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>📋 利用規約を見る</button>
-                  <button onClick={() => setLegalModal("privacy")} className="bp" style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>🔒 プライバシーポリシー</button>
-                  <button onClick={() => setLegalModal("contact")} className="bp" style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>📮 お問い合わせ</button>
+                  <button onClick={() => setLegalModal("faq")} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>❓ よくある質問（FAQ）</button>
+                  <button onClick={() => setLegalModal("terms")} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>📋 利用規約を見る</button>
+                  <button onClick={() => setLegalModal("privacy")} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer", marginBottom: 7 }}>プライバシーポリシー</button>
+                  <button onClick={() => setLegalModal("contact")} className="bp" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 10, padding: "11px", color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>お問い合わせ</button>
                 </div>
 
-                {isAdmin && <button onClick={() => setView("admin")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#e8eaf0,#c8d0e0)", border: "none", borderRadius: 12, padding: 12, color: "#7c6aff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 7 }}>🛡️ 管理画面</button>}
+                {isAdmin && <button onClick={() => setView("admin")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#1a1d2e,#252840)", border: "none", borderRadius: 12, padding: 12, color: "#7c6aff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 7 }}>管理画面</button>}
                 <button onClick={async () => { await signOut(auth); setUser(null); setMyItems([]); setThreads([]); setApplications([]); setLikedItems([]); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #252836", borderRadius: 12, padding: 12, color: "#6b7280", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
 
                 <button className="bp" style={{ width: "100%", background: "none", border: "1px solid #fecaca", borderRadius: 12, padding: 12, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>アカウントを削除する</button>
@@ -1665,20 +1665,20 @@ export default function SwapApp() {
       {/* ── POST MODAL ── */}
       {showPostModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => { setShowPostModal(false); setEditingItem(null); }}>
-          <div style={{ background: "#0f1117", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "92vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#0d0f1a", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "92vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#3a3f52", borderRadius: 2, margin: "0 auto 15px" }} />
             <h2 style={{ fontSize: 17, fontWeight: 800, color: "#e8eaf0", marginBottom: editingItem ? 14 : 3 }}>{editingItem ? "✏️ 出品を編集" : "新規投稿"}</h2>
             {!editingItem && (
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7, marginBottom: 16 }}>
                 {[["offer", "🔥 出品する", "持っているものを交換に出す"]].map(([type, ttl, desc]) => (
-                  <button key={type} onClick={() => setPostType(type)} className="bp" style={{ background: postType === type ? "#e8eaf0" : "#fff", border: `2px solid ${postType === type ? "#7c6aff" : "#252836"}`, borderRadius: 12, padding: 12, cursor: "pointer", textAlign: "left" }}>
+                  <button key={type} onClick={() => setPostType(type)} className="bp" style={{ background: postType === type ? "#7c6aff" : "#fff", border: `2px solid ${postType === type ? "#7c6aff" : "#252840"}`, borderRadius: 12, padding: 12, cursor: "pointer", textAlign: "left" }}>
                     <p style={{ fontSize: 12, fontWeight: 700, color: postType === type ? "#7c6aff" : "#e8eaf0", marginBottom: 2 }}>{ttl}</p>
                     <p style={{ fontSize: 9, color: postType === type ? "#6b7280" : "#9a8a7a", lineHeight: 1.4 }}>{desc}</p>
                   </button>
                 ))}
               </div>
             )}
-            <div style={{ background: "#1e2130", borderRadius: 13, padding: 15, marginBottom: 11 }}>
+            <div style={{ background: "#1a1d2e", borderRadius: 13, padding: 15, marginBottom: 11 }}>
               <div style={{ marginBottom: 13 }}>
                 <input type="file" accept="image/*" multiple ref={el => window._imgInput = el} style={{ display: "none" }} onChange={async (e) => {
                   const files = Array.from(e.target.files);
@@ -1695,7 +1695,7 @@ export default function SwapApp() {
                     setPostForm(f => ({ ...f, imageUrls: [...(f.imageUrls || []), ...urls], uploading: false }));
                   } catch(e) { setPostForm(f => ({ ...f, uploading: false })); showToast("❌ アップロード失敗"); }
                 }} />
-                <div onClick={() => { if ((postForm.imageUrls || []).length >= 3) { showToast("⚠️ 写真は最大3枚です"); return; } window._imgInput?.click(); }} style={{ border: "2px dashed #252836", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#1a1d27" }}>
+                <div onClick={() => { if ((postForm.imageUrls || []).length >= 3) { showToast("⚠️ 写真は最大3枚です"); return; } window._imgInput?.click(); }} style={{ border: "2px dashed #252836", borderRadius: 10, height: 110, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", marginBottom: 8, background: "#1a1d2e" }}>
                   {postForm.uploading ? (
                     <div style={{ textAlign: "center" }}>
                       <div style={{ width: 28, height: 28, border: "3px solid #7c6aff", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 6px", animation: "spin .8s linear infinite" }} />
@@ -1727,29 +1727,29 @@ export default function SwapApp() {
                     <p style={{ fontSize: 10, color: "#6b7280", marginBottom: 5 }}>💡 空欄の場合はマイページの「欲しいもの」が使われます。この商品だけ特定のものと交換したい場合に入力してください</p>
                   )}
                   {key === "detail" ? (
-                    <textarea value={postForm[key]} onChange={e => setPostForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", height: 65, resize: "none" }} />
+                    <textarea value={postForm[key]} onChange={e => setPostForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", height: 65, resize: "none" }} />
                   ) : (
-                    <input value={postForm[key]} onChange={e => setPostForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0" }} />
+                    <input value={postForm[key]} onChange={e => setPostForm(f => ({ ...f, [key]: e.target.value }))} placeholder={ph} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0" }} />
                   )}
                 </div>
               ))}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 4 }}>カテゴリー</p>
-                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value, subCategory: "" }))} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", cursor: "pointer" }}>
+                  <select value={postForm.category} onChange={e => setPostForm(f => ({ ...f, category: e.target.value, subCategory: "" }))} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", cursor: "pointer" }}>
                     {CATEGORIES.filter(c => c !== "すべて").map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div>
                   <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 4 }}>状態</p>
-                  <select value={postForm.condition} onChange={e => setPostForm(f => ({ ...f, condition: e.target.value }))} style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", cursor: "pointer" }}>
+                  <select value={postForm.condition} onChange={e => setPostForm(f => ({ ...f, condition: e.target.value }))} style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0", cursor: "pointer" }}>
                     {CONDITIONS.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 4 }}>中分類 <span style={{ color: "#ef4444" }}>*</span></p>
-                <select value={postForm.subCategory} onChange={e => setPostForm(f => ({ ...f, subCategory: e.target.value }))} style={{ width: "100%", background: "#1a1d27", border: postForm.subCategory ? "none" : "1px solid #fca5a5", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: postForm.subCategory ? "#e8eaf0" : "#6b7280", cursor: "pointer" }}>
+                <select value={postForm.subCategory} onChange={e => setPostForm(f => ({ ...f, subCategory: e.target.value }))} style={{ width: "100%", background: "#1a1d2e", border: postForm.subCategory ? "none" : "1px solid #fca5a5", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: postForm.subCategory ? "#e8eaf0" : "#6b7280", cursor: "pointer" }}>
                   <option value="">-- 選択してください --</option>
                   {(SUB_CATEGORIES[postForm.category] || ["その他"]).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -1759,13 +1759,13 @@ export default function SwapApp() {
                   <p style={{ fontSize: 11, fontWeight: 700, color: "#d97706", marginBottom: 10 }}>🎁 食品・ギフト情報</p>
                   <div style={{ marginBottom: 10 }}>
                     <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 4 }}>賞味期限 <span style={{ color: "#ef4444" }}>*</span></p>
-                    <input type="date" value={postForm.expiryDate} onChange={e => setPostForm(f => ({ ...f, expiryDate: e.target.value }))} style={{ width: "100%", background: "#1e2130", border: "1px solid #fcd34d", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0" }} />
+                    <input type="date" value={postForm.expiryDate} onChange={e => setPostForm(f => ({ ...f, expiryDate: e.target.value }))} style={{ width: "100%", background: "#1a1d2e", border: "1px solid #fcd34d", borderRadius: 9, padding: "9px 11px", fontSize: 12, color: "#e8eaf0" }} />
                   </div>
                   <div>
                     <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 6 }}>発送・保存方法</p>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                       {["常温OK", "冷蔵必要", "冷凍必要", "生もの注意", "割れ物注意"].map(opt => (
-                        <button key={opt} onClick={() => setPostForm(f => ({ ...f, shippingNote: opt }))} className="bp" style={{ background: postForm.shippingNote === opt ? "#d97706" : "#fff", border: `1px solid ${postForm.shippingNote === opt ? "#d97706" : "#252836"}`, borderRadius: 20, padding: "5px 11px", fontSize: 11, fontWeight: 600, color: postForm.shippingNote === opt ? "#fff" : "#a0a8c0", cursor: "pointer" }}>{opt}</button>
+                        <button key={opt} onClick={() => setPostForm(f => ({ ...f, shippingNote: opt }))} className="bp" style={{ background: postForm.shippingNote === opt ? "#d97706" : "#fff", border: `1px solid ${postForm.shippingNote === opt ? "#d97706" : "#252840"}`, borderRadius: 20, padding: "5px 11px", fontSize: 11, fontWeight: 600, color: postForm.shippingNote === opt ? "#fff" : "#a0a8c0", cursor: "pointer" }}>{opt}</button>
                       ))}
                     </div>
                   </div>
@@ -1808,7 +1808,7 @@ export default function SwapApp() {
       {/* ── OWNER PROFILE ── */}
       {selectedOwner && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setSelectedOwner(null)}>
-          <div style={{ background: "#0f1117", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#0d0f1a", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#3a3f52", borderRadius: 2, margin: "14px auto 0" }} />
             <div style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, borderBottom: "1px solid #252836" }}>
               <div style={{ width: 60, height: 60, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 22, flexShrink: 0 }}>{selectedOwner.avatar}</div>
@@ -1819,13 +1819,13 @@ export default function SwapApp() {
                   {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name).length >= 5 && <span style={{ background: "#7c6aff", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#e8eaf0" }}>🏆 アクティブ</span>}
                   {threads.filter(t => t.tradeStatus === "完了" && (t.partner === selectedOwner.name || t.ownerName === selectedOwner.name)).length >= 1 && <span style={{ background: "#dcfce7", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#15803d" }}>✅ 成立実績あり</span>}
                   {threads.filter(t => t.tradeStatus === "完了" && (t.partner === selectedOwner.name || t.ownerName === selectedOwner.name)).length >= 3 && <span style={{ background: "#fef9c3", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 700, color: "#854d0e" }}>🌟 信頼ユーザー</span>}
-                  <span style={{ background: "#0f1117", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 600, color: "#a0a8c0" }}>出品 {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name).length}件</span>
+                  <span style={{ background: "#0d0f1a", borderRadius: 20, padding: "2px 9px", fontSize: 9, fontWeight: 600, color: "#a0a8c0" }}>出品 {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name).length}件</span>
                 </div>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#252836", margin: "0 0 14px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#252840", margin: "0 0 14px" }}>
               {[["⭐ 評価", myReviews.length > 0 ? (myReviews.reduce((s, r) => s + (r.rating || 0), 0) / myReviews.length).toFixed(1) : "なし"], ["🔁 成立", `${threads.filter(t => t.tradeStatus === "完了").length}回`], ["❌ キャンセル率", "0%"]].map(([label, val]) => (
-                <div key={label} style={{ background: "#1e2130", padding: "12px 0", textAlign: "center" }}>
+                <div key={label} style={{ background: "#1a1d2e", padding: "12px 0", textAlign: "center" }}>
                   <p style={{ fontSize: 16, fontWeight: 800, color: "#e8eaf0" }}>{val}</p>
                   <p style={{ fontSize: 9, color: "#6b7280" }}>{label}</p>
                 </div>
@@ -1841,7 +1841,7 @@ export default function SwapApp() {
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
                   {[...allItems, ...myItems].filter(i => i.owner === selectedOwner.name && i.status !== "非公開").map(item => (
-                    <div key={item.id} onClick={() => { setSelectedOwner(null); openDetail(item); }} className="ph" style={{ background: "#1e2130", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", cursor: "pointer" }}>
+                    <div key={item.id} onClick={() => { setSelectedOwner(null); openDetail(item); }} className="ph" style={{ background: "#1a1d2e", borderRadius: 13, overflow: "hidden", boxShadow: "0 2px 12px rgba(0,0,0,.4)", cursor: "pointer" }}>
                       <div style={{ height: 90, background: "linear-gradient(135deg,#1a1d27,#252836)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
                         {item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}
                       </div>
@@ -1857,7 +1857,7 @@ export default function SwapApp() {
               {ownerReviews.length === 0 ? (
                 <p style={{ fontSize: 12, color: "#6b7280", textAlign: "center", padding: "12px 0" }}>まだレビューはありません</p>
               ) : ownerReviews.map((review, i) => (
-                <div key={i} style={{ background: "#1e2130", borderRadius: 12, padding: 13, marginBottom: 8 }}>
+                <div key={i} style={{ background: "#1a1d2e", borderRadius: 12, padding: 13, marginBottom: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
                     <div style={{ width: 28, height: 28, background: "#7c6aff", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 10 }}>{review.fromName?.charAt(0).toUpperCase()}</div>
                     <div style={{ flex: 1 }}>
@@ -1876,12 +1876,12 @@ export default function SwapApp() {
       {/* ── TRADE MODAL ── */}
       {showTradeModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowTradeModal(null)}>
-          <div style={{ background: "#0f1117", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "85vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#0d0f1a", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, maxHeight: "85vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#3a3f52", borderRadius: 2, margin: "0 auto 15px" }} />
             <h2 style={{ fontSize: 17, fontWeight: 800, color: "#e8eaf0", marginBottom: 4 }}>⟳ 交換を申し込む</h2>
             <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 12 }}>出品者が24時間以内に返答します</p>
-            <div style={{ background: "#1e2130", borderRadius: 12, padding: 11, marginBottom: 11, display: "flex", gap: 10, alignItems: "center" }}>
-              <div style={{ width: 48, height: 48, background: "#1a1d27", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.imageUrls?.[0] ? <img src={showTradeModal.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(showTradeModal.image, 48)}</div>
+            <div style={{ background: "#1a1d2e", borderRadius: 12, padding: 11, marginBottom: 11, display: "flex", gap: 10, alignItems: "center" }}>
+              <div style={{ width: 48, height: 48, background: "#1a1d2e", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 25 }}>{showTradeModal.imageUrls?.[0] ? <img src={showTradeModal.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(showTradeModal.image, 48)}</div>
               <div>
                 <p style={{ fontSize: 10, fontWeight: 700, color: "#6a58f0", marginBottom: 2 }}>相手のアイテム</p>
                 <p style={{ fontWeight: 600, fontSize: 13, color: "#e8eaf0" }}>{showTradeModal.title}</p>
@@ -1890,13 +1890,13 @@ export default function SwapApp() {
             </div>
             <div style={{ textAlign: "center", fontSize: 18, color: "#7c6aff", margin: "3px 0 9px" }}>⟳ あなたが提供</div>
             {myItems.length === 0 ? (
-              <div style={{ background: "#1e2130", borderRadius: 12, padding: 20, textAlign: "center", marginBottom: 11 }}>
+              <div style={{ background: "#1a1d2e", borderRadius: 12, padding: 20, textAlign: "center", marginBottom: 11 }}>
                 <p style={{ fontSize: 13, color: "#6b7280", marginBottom: 8 }}>出品中のアイテムがありません</p>
                 <button onClick={() => { setShowTradeModal(null); setShowPostModal(true); }} className="bp" style={{ background: "#7c6aff", border: "none", borderRadius: 20, padding: "8px 16px", fontSize: 12, fontWeight: 700, color: "#e8eaf0", cursor: "pointer" }}>+ 出品する</button>
               </div>
             ) : myItems.map(item => (
-              <div key={item.id} onClick={() => setSelectedMyItem(item)} className="ph" style={{ background: "#1e2130", borderRadius: 12, padding: 11, marginBottom: 7, display: "flex", gap: 10, alignItems: "center", border: `2px solid ${selectedMyItem?.id === item.id ? "#7c6aff" : "transparent"}` }}>
-                <div style={{ width: 44, height: 44, background: "#1a1d27", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
+              <div key={item.id} onClick={() => setSelectedMyItem(item)} className="ph" style={{ background: "#1a1d2e", borderRadius: 12, padding: 11, marginBottom: 7, display: "flex", gap: 10, alignItems: "center", border: `2px solid ${selectedMyItem?.id === item.id ? "#7c6aff" : "transparent"}` }}>
+                <div style={{ width: 44, height: 44, background: "#1a1d2e", borderRadius: 9, overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{item.imageUrls?.[0] ? <img src={item.imageUrls[0]} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : imgSafe(item.image, 48)}</div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontWeight: 600, fontSize: 12, color: "#e8eaf0" }}>{item.title}</p>
                   <p style={{ fontSize: 10, color: "#6b7280" }}>{item.condition}</p>
@@ -1908,15 +1908,15 @@ export default function SwapApp() {
             ))}
             <div style={{ marginBottom: 10 }}>
               <p style={{ fontSize: 10, fontWeight: 700, color: "#a0a8c0", marginBottom: 5 }}>一言メッセージ（任意）</p>
-              <textarea id="tradeMsg" placeholder="一言添えるとマッチ率アップ！" style={{ width: "100%", background: "#1a1d27", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0", height: 60, resize: "none" }} />
+              <textarea id="tradeMsg" placeholder="一言添えるとマッチ率アップ！" style={{ width: "100%", background: "#1a1d2e", border: "none", borderRadius: 9, padding: "10px 12px", fontSize: 12, color: "#e8eaf0", height: 60, resize: "none" }} />
             </div>
             <div style={{ background: "#fffbeb", border: "1px solid #fcd34d", borderRadius: 10, padding: 10, marginBottom: 12 }}>
               <p style={{ fontSize: 11, color: "#92400e" }}>⏰ 出品者が24時間以内に返答しない場合は自動キャンセルされます</p>
             </div>
             <AffiliateCard ad={AFFILIATE_ADS[0]} compact />
             <div style={{ display: "flex", gap: 7, marginTop: 10 }}>
-              <button onClick={() => setShowTradeModal(null)} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 11, padding: 12, color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>キャンセル</button>
-              <button onClick={() => submitApplication(showTradeModal, selectedMyItem, document.getElementById("tradeMsg")?.value || "")} className="bp" style={{ flex: 2, background: selectedMyItem ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#252836", border: "none", borderRadius: 11, padding: 12, color: selectedMyItem ? "#e8eaf0" : "#4a5068", fontWeight: 700, fontSize: 13, cursor: selectedMyItem ? "pointer" : "not-allowed" }}>
+              <button onClick={() => setShowTradeModal(null)} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 11, padding: 12, color: "#a0a8c0", fontWeight: 600, fontSize: 12, cursor: "pointer" }}>キャンセル</button>
+              <button onClick={() => submitApplication(showTradeModal, selectedMyItem, document.getElementById("tradeMsg")?.value || "")} className="bp" style={{ flex: 2, background: selectedMyItem ? "linear-gradient(135deg,#7c6aff,#6a58f0)" : "#252840", border: "none", borderRadius: 11, padding: 12, color: selectedMyItem ? "#e8eaf0" : "#4a5068", fontWeight: 700, fontSize: 13, cursor: selectedMyItem ? "pointer" : "not-allowed" }}>
                 申し込む →
               </button>
             </div>
@@ -1927,12 +1927,12 @@ export default function SwapApp() {
       {/* ── LEGAL MODAL ── */}
       {legalModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.75)", zIndex: 2000, display: "flex", alignItems: "flex-end" }} onClick={() => setLegalModal(null)}>
-          <div style={{ background: "#0f1117", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
-            <div style={{ position: "sticky", top: 0, background: "#0f1117", padding: "14px 18px 10px", borderBottom: "1px solid #252836", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ background: "#0d0f1a", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", maxHeight: "88vh", overflowY: "auto", animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+            <div style={{ position: "sticky", top: 0, background: "#0d0f1a", padding: "14px 18px 10px", borderBottom: "1px solid #252836", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <h2 style={{ fontSize: 16, fontWeight: 800, color: "#e8eaf0" }}>
                 {legalModal === "terms" && "📋 利用規約"}
-                {legalModal === "privacy" && "🔒 プライバシーポリシー"}
-                {legalModal === "contact" && "📮 お問い合わせ"}
+                {legalModal === "privacy" && "プライバシーポリシー"}
+                {legalModal === "contact" && "お問い合わせ"}
                 {legalModal === "faq" && "❓ よくある質問"}
               </h2>
               <button onClick={() => setLegalModal(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#6b7280" }}>✕</button>
@@ -1975,31 +1975,31 @@ export default function SwapApp() {
               </>)}
               {legalModal === "faq" && (<>
                 {[
-                  ["🔒 住所を相手に教えなくて大丈夫？", "はい。郵便局留め・ヤマト営業所止め・PUDOロッカーを使えば住所を教えずに送受取できます。発送が始まると画面内に具体的な方法が表示されます。"],
+                  ["住所を相手に教えなくて大丈夫？", "はい。郵便局留め・ヤマト営業所止め・PUDOロッカーを使えば住所を教えずに送受取できます。発送が始まると画面内に具体的な方法が表示されます。"],
                   ["⟳ 交換が成立しなかったらどうなる？", "申し込みが断られた・期限切れ・キャンセルの場合は出品が継続されます。交換成立まで何度でも他のユーザーと交渉できます。"],
                   ["📦 相手が発送してくれなかったら？", "「発送しました」ボタンを押した後、相手が受け取り確認をしない場合はチャットで連絡を取ってください。それでも解決しない場合は通報機能からご連絡ください。運営が状況を確認します。"],
                   ["⭐ 評価はどう使われる？", "相互レビューで積み上がる平均評価スコアがプロフィールに表示されます。高評価ユーザーには「信頼ユーザー」バッジが付き、交換が成立しやすくなります。"],
                   ["💰 本当に手数料ゼロ？", "はい。出品・申し込み・交換のすべてが完全無料です。配送費用のみ各自の負担となります。"],
                   ["🚫 トラブルになったら？", "まずチャットで相手と話し合ってください。解決しない場合は通報ボタン or contact@swapru.app へご連絡ください。悪質ユーザーはBANします。"],
-                  ["📮 配送はどうすればいい？", "配送はユーザー間で各自手配してください。ヤマト宅急便・ゆうパック・クリックポストなどが使えます。発送画面に詳しいガイドが表示されます。"],
-                  ["🔒 住所を教えずに送れる？", "ヤマト「宅急便をスマホで送る」のLINE匿名配送を使えばOKです。チャットでLINEを交換 → ヤマトのアプリでリクエスト送信 → 相手が住所入力 → 発送の流れで、お互いの住所・氏名を非公開のまま送れます（送料 +110円）。クロネコメンバーズ登録が必要です。"],
+                  ["配送はどうすればいい？", "配送はユーザー間で各自手配してください。ヤマト宅急便・ゆうパック・クリックポストなどが使えます。発送画面に詳しいガイドが表示されます。"],
+                  ["住所を教えずに送れる？", "ヤマト「宅急便をスマホで送る」のLINE匿名配送を使えばOKです。チャットでLINEを交換 → ヤマトのアプリでリクエスト送信 → 相手が住所入力 → 発送の流れで、お互いの住所・氏名を非公開のまま送れます（送料 +110円）。クロネコメンバーズ登録が必要です。"],
                   ["📱 アプリはある？", "現在はWebアプリのみです。スマホのブラウザからそのまま使えます。ホーム画面に追加するとアプリ感覚で使えます。"],
                 ].map(([q, a]) => (
-                  <div key={q} style={{ marginBottom: 18, background: "#1a1d27", borderRadius: 11, padding: "12px 14px" }}>
+                  <div key={q} style={{ marginBottom: 18, background: "#1a1d2e", borderRadius: 11, padding: "12px 14px" }}>
                     <p style={{ fontWeight: 700, fontSize: 13, color: "#e8eaf0", marginBottom: 6 }}>{q}</p>
                     <p style={{ fontSize: 12, color: "#a0a8c0", lineHeight: 1.8 }}>{a}</p>
                   </div>
                 ))}
               </>)}
               {legalModal === "contact" && (<>
-                <div style={{ background: "#1e2130", borderRadius: 13, padding: 16, marginBottom: 14 }}>
+                <div style={{ background: "#1a1d2e", borderRadius: 13, padding: 16, marginBottom: 14 }}>
                   <p style={{ fontWeight: 700, fontSize: 13, color: "#e8eaf0", marginBottom: 8 }}>📧 メールでのお問い合わせ</p>
                   <p style={{ marginBottom: 12 }}>下記メールアドレスまでお気軽にご連絡ください。通常2〜3営業日以内にご返信いたします。</p>
-                  <div style={{ background: "#1a1d27", borderRadius: 9, padding: "11px 13px", textAlign: "center" }}>
+                  <div style={{ background: "#1a1d2e", borderRadius: 9, padding: "11px 13px", textAlign: "center" }}>
                     <p style={{ fontWeight: 700, color: "#6a58f0", fontSize: 13 }}>contact@swapru.app</p>
                   </div>
                 </div>
-                <div style={{ background: "#1a1730", border: "1px solid #2d2450", borderRadius: 13, padding: 14 }}>
+                <div style={{ background: "#1a1d2e", border: "1px solid #2d2450", borderRadius: 13, padding: 14 }}>
                   <p style={{ fontWeight: 700, fontSize: 12, color: "#6a58f0", marginBottom: 6 }}>⚠️ 取引トラブルについて</p>
                   <p>本サービスはユーザー間の個人取引のため、取引に関するトラブルは当事者間での解決をお願いしております。運営者は取引への介入・補償を行うことができません。</p>
                 </div>
@@ -2014,9 +2014,9 @@ export default function SwapApp() {
         <div style={{ paddingBottom: 80 }}>
           <div style={{ background: "#e8eaf0", padding: "16px", display: "flex", alignItems: "center", gap: 12 }}>
             <button onClick={() => setView("mypage")} style={{ background: "none", border: "none", color: "#7c6aff", fontSize: 20, cursor: "pointer" }}>←</button>
-            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#7c6aff" }}>🛡️ 管理画面</h2>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#7c6aff" }}>管理画面</h2>
           </div>
-          <div style={{ display: "flex", background: "#1e2130", borderBottom: "1px solid #252836" }}>
+          <div style={{ display: "flex", background: "#1a1d2e", borderBottom: "1px solid #252836" }}>
             {[["dashboard","📊 概要"], ["items","📦 出品"], ["users","👥 ユーザー"], ["reports","🚨 通報"]].map(([tab, label]) => (
               <button key={tab} onClick={() => setAdminTab(tab)} style={{ flex: 1, background: "none", border: "none", borderBottom: adminTab === tab ? "2px solid #7c6aff" : "2px solid transparent", padding: "10px 0", fontSize: 10, fontWeight: 700, color: adminTab === tab ? "#6a58f0" : "#6b7280", cursor: "pointer" }}>{label}</button>
             ))}
@@ -2025,13 +2025,13 @@ export default function SwapApp() {
             <div style={{ padding: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
                 {[["📦 出品数", allItems.filter(i=>i.status!=="交換済み").length + myItems.filter(i=>i.status!=="交換済み").length, "#7c6aff"], ["👥 ユーザー数", "1", "#60a5fa"], ["🚨 通報数", reports.length, "#f87171"], ["✅ 成立数", threads.filter(t => t.tradeStatus === "完了").length, "#4ade80"]].map(([label, val, color]) => (
-                  <div key={label} style={{ background: "#1e2130", borderRadius: 13, padding: 14, boxShadow: "0 2px 12px rgba(0,0,0,.4)", textAlign: "center" }}>
+                  <div key={label} style={{ background: "#1a1d2e", borderRadius: 13, padding: 14, boxShadow: "0 2px 12px rgba(0,0,0,.4)", textAlign: "center" }}>
                     <p style={{ fontSize: 22, fontWeight: 800, color }}>{val}</p>
                     <p style={{ fontSize: 11, color: "#6b7280" }}>{label}</p>
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#1e2130", borderRadius: 13, padding: 14, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+              <div style={{ background: "#1a1d2e", borderRadius: 13, padding: 14, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: "#e8eaf0", marginBottom: 10 }}>🚨 未対応通報</p>
                 {reports.filter(r => r.status === "未対応").length === 0 ? (
                   <p style={{ fontSize: 12, color: "#6b7280", textAlign: "center", padding: "10px 0" }}>通報はありません ✅</p>
@@ -2049,9 +2049,9 @@ export default function SwapApp() {
             <div style={{ padding: 14 }}>
               <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 10 }}>全出品 {allItems.filter(i=>i.status!=="交換済み").length + myItems.filter(i=>i.status!=="交換済み").length}件</p>
               {[...allItems, ...myItems].map(item => (
-                <div key={item.id} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+                <div key={item.id} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
                   <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
-                    <div style={{ width: 44, height: 44, background: "#0f1117", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 44)}</div>
+                    <div style={{ width: 44, height: 44, background: "#0d0f1a", borderRadius: 9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, overflow: "hidden" }}>{imgSafe(item.image, 44)}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontWeight: 700, fontSize: 12, color: "#e8eaf0", marginBottom: 2 }}>{item.title}</p>
                       <p style={{ fontSize: 10, color: "#6b7280" }}>by {item.owner} · {item.category}</p>
@@ -2069,7 +2069,7 @@ export default function SwapApp() {
           {adminTab === "users" && (
             <div style={{ padding: 14 }}>
               {[...new Map([...allItems, ...myItems].map(i => [i.owner, i])).values()].map(item => (
-                <div key={item.owner} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
+                <div key={item.owner} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)", display: "flex", alignItems: "center", gap: 10 }}>
                   <div style={{ width: 40, height: 40, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{item.ownerAvatar}</div>
                   <div style={{ flex: 1 }}>
                     <p style={{ fontWeight: 700, fontSize: 13, color: "#e8eaf0" }}>{item.owner}</p>
@@ -2088,7 +2088,7 @@ export default function SwapApp() {
                   <p style={{ fontSize: 13 }}>通報はありません</p>
                 </div>
               ) : reports.map(r => (
-                <div key={r.id} style={{ background: "#1e2130", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
+                <div key={r.id} style={{ background: "#1a1d2e", borderRadius: 13, padding: 13, marginBottom: 9, boxShadow: "0 2px 12px rgba(0,0,0,.4)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                     <span style={{ background: r.status === "未対応" ? "#fef2f2" : "#dcfce7", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 700, color: r.status === "未対応" ? "#ef4444" : "#16a34a" }}>{r.status}</span>
                     <p style={{ fontSize: 10, color: "#6b7280" }}>{new Date(r.createdAt).toLocaleDateString("ja-JP")}</p>
@@ -2112,29 +2112,29 @@ export default function SwapApp() {
       {/* 通報モーダル */}
       {showReportModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.72)", zIndex: 1000, display: "flex", alignItems: "flex-end" }} onClick={() => setShowReportModal(null)}>
-          <div style={{ background: "#0f1117", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "#0d0f1a", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: 430, margin: "0 auto", padding: 20, animation: "up .3s ease" }} onClick={e => e.stopPropagation()}>
             <div style={{ width: 34, height: 4, background: "#3a3f52", borderRadius: 2, margin: "0 auto 15px" }} />
             <h2 style={{ fontSize: 16, fontWeight: 800, color: "#e8eaf0", marginBottom: 4 }}>🚨 通報する</h2>
             <p style={{ fontSize: 11, color: "#6b7280", marginBottom: 14 }}>「{showReportModal.title}」を通報</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {["偽物・模倣品", "賞味期限切れ食品", "詐欺・虚偽出品", "不適切なコンテンツ", "スパム・宣伝", "その他"].map(reason => (
-                <button key={reason} onClick={() => setReportReason(reason)} className="bp" style={{ background: reportReason === reason ? "#e8eaf0" : "#fff", border: `2px solid ${reportReason === reason ? "#7c6aff" : "#252836"}`, borderRadius: 10, padding: "10px 14px", textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 600, color: reportReason === reason ? "#7c6aff" : "#a0a8c0" }}>{reason}</button>
+                <button key={reason} onClick={() => setReportReason(reason)} className="bp" style={{ background: reportReason === reason ? "#7c6aff" : "#fff", border: `2px solid ${reportReason === reason ? "#7c6aff" : "#252840"}`, borderRadius: 10, padding: "10px 14px", textAlign: "left", cursor: "pointer", fontSize: 13, fontWeight: 600, color: reportReason === reason ? "#7c6aff" : "#a0a8c0" }}>{reason}</button>
               ))}
             </div>
-            <button onClick={submitReport} className="bp" style={{ width: "100%", background: reportReason ? "#ef4444" : "#252836", border: "none", borderRadius: 12, padding: 13, color: reportReason ? "#fff" : "#4a5068", fontWeight: 700, fontSize: 14, cursor: reportReason ? "pointer" : "default" }}>通報を送信する</button>
+            <button onClick={submitReport} className="bp" style={{ width: "100%", background: reportReason ? "#ef4444" : "#252840", border: "none", borderRadius: 12, padding: 13, color: reportReason ? "#fff" : "#4a5068", fontWeight: 700, fontSize: 14, cursor: reportReason ? "pointer" : "default" }}>通報を送信する</button>
           </div>
         </div>
       )}
 
       {/* ── TOAST ── */}
-      {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#2a2d3e", color: "#e8eaf0", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
+      {toast && <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", background: "#1a1d2e", color: "#e8eaf0", borderRadius: 19, padding: "10px 20px", fontSize: 12, fontWeight: 600, zIndex: 2000, whiteSpace: "nowrap", animation: "ti .25s ease", boxShadow: "0 4px 18px rgba(0,0,0,.35)" }}>{toast}</div>}
       {confirmDialog && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.5)", zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div style={{ background: "#1e2130", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
+          <div style={{ background: "#1a1d2e", borderRadius: 18, padding: 22, width: "100%", maxWidth: 320, boxShadow: "0 8px 32px rgba(0,0,0,.2)" }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: "#e8eaf0", marginBottom: 6, textAlign: "center" }}>確認</p>
             <p style={{ fontSize: 13, color: "#a0a8c0", marginBottom: 20, textAlign: "center", lineHeight: 1.6 }}>{confirmDialog.message}</p>
             <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#0f1117", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>キャンセル</button>
+              <button onClick={() => setConfirmDialog(null)} className="bp" style={{ flex: 1, background: "#0d0f1a", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#6b7280", cursor: "pointer" }}>キャンセル</button>
               <button onClick={() => { confirmDialog.onOk(); setConfirmDialog(null); }} className="bp" style={{ flex: 1, background: "#ef4444", border: "none", borderRadius: 12, padding: 12, fontSize: 13, fontWeight: 700, color: "#fff", cursor: "pointer" }}>{confirmDialog.okLabel || "やめる"}</button>
             </div>
           </div>
@@ -2142,7 +2142,7 @@ export default function SwapApp() {
       )}
 
       {/* ── BOTTOM NAV ── */}
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#1e2130", borderTop: "1px solid #252836", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 24px rgba(0,0,0,.5)" }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 430, background: "#1a1d2e", borderTop: "1px solid #252836", display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr", padding: "6px 0 9px", zIndex: 100, boxShadow: "0 -4px 24px rgba(0,0,0,.5)" }}>
         {[["🏠","ホーム","home"],["🔍","さがす","list"],["➕","投稿",null],["💬","スワップ","messages"],["👤","マイページ","mypage"]].map(([icon, label, v]) => (
           <button key={label} onClick={() => v ? setView(v) : setShowPostModal(true)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 1, cursor: "pointer", padding: "2px 0", position: "relative" }}>
             {label === "投稿" ? (
