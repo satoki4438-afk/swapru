@@ -636,7 +636,7 @@ export default function SwapApp() {
 
   // ── LANDING ──
   if (authState !== "app") return (
-    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "#0a0c14", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
+    <div style={{ fontFamily: "'Noto Sans JP','Hiragino Sans',sans-serif", background: "linear-gradient(160deg,#1a1208 0%,#2d1f0e 50%,#1a1208 100%)", minHeight: "100vh", maxWidth: 430, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32, overflow: "hidden", position: "relative" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Syne:wght@700;800&display=swap');
         *{box-sizing:border-box;margin:0;padding:0} .bp:active{transform:scale(.96)}
@@ -647,8 +647,8 @@ export default function SwapApp() {
       <div style={{ position: "absolute", top: -60, left: -60, width: 250, height: 250, background: "radial-gradient(circle,rgba(124,106,255,.12) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
       <div className="au" style={{ animationDelay: "0ms", textAlign: "center", marginBottom: 40 }}>
         <div style={{ width: 72, height: 72, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, margin: "0 auto 16px", boxShadow: "0 8px 32px rgba(124,106,255,.35)" }}>⟳</div>
-        <h1 style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 38, color: "#0f1117", letterSpacing: -1 }}>Swap<span style={{ color: "#7c6aff" }}>ru</span></h1>
-        <p style={{ color: "#6b7280", fontSize: 13, marginTop: 8 }}>お金を使わない、新しい交換体験</p>
+        <h1 style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 38, color: "#f5f0e8", letterSpacing: -1 }}>Swap<span style={{ color: "#d4a574" }}>ru</span></h1>
+        <p style={{ color: "#c4a882", fontSize: 13, marginTop: 8 }}>お金を使わない、新しい交換体験</p>
       </div>
       <div className="au" style={{ animationDelay: "80ms", width: "100%", marginBottom: 36 }}>
         {[["⟳", "手数料ゼロ", "出品・交換・メッセージすべて無料"], ["🎯", "ザッピングして発見", "AIに頼らず、自分で探す楽しさ"], ["🙋", "欲しいも投稿できる", "「これ頂戴」リクエスト機能つき"]].map(([icon, ttl, desc]) => (
@@ -1654,6 +1654,7 @@ export default function SwapApp() {
 
                 {isAdmin && <button onClick={() => setView("admin")} className="bp" style={{ width: "100%", background: "linear-gradient(135deg,#e8eaf0,#c8d0e0)", border: "none", borderRadius: 12, padding: 12, color: "#7c6aff", fontSize: 13, fontWeight: 700, cursor: "pointer", marginBottom: 7 }}>🛡️ 管理画面</button>}
                 <button onClick={async () => { await signOut(auth); setUser(null); setMyItems([]); setThreads([]); setApplications([]); setLikedItems([]); setAuthState("landing"); }} className="bp" style={{ width: "100%", background: "none", border: "1px solid #252836", borderRadius: 12, padding: 12, color: "#6b7280", fontSize: 13, cursor: "pointer", marginBottom: 7 }}>ログアウト</button>
+
                 <button className="bp" style={{ width: "100%", background: "none", border: "1px solid #fecaca", borderRadius: 12, padding: 12, color: "#ef4444", fontSize: 12, cursor: "pointer" }}>アカウントを削除する</button>
               </div>
             )}
