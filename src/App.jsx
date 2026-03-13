@@ -710,7 +710,7 @@ export default function SwapApp() {
         `}</style>
 
         {/* Chat header */}
-        <div style={{ background: "#13151f", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 20px rgba(0,0,0,.6)" }}>
+        <div style={{ background: "#1a1208", padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, boxShadow: "0 2px 20px rgba(0,0,0,.6)" }}>
           <button onClick={() => { if (window._chatUnsub) { window._chatUnsub(); window._chatUnsub = null; } setConfirmDialog(null); setView("messages"); }} style={{ background: "none", border: "none", color: "#7c6aff", fontSize: 20, cursor: "pointer", padding: "4px 8px 4px 0" }}>←</button>
           <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#7c6aff,#6a58f0)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", color: "#e8eaf0", fontWeight: 700, fontSize: 14, flexShrink: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>{thread.partnerAvatar}</div>
           <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={() => setSelectedOwner({ name: thread.partner, avatar: thread.partnerAvatar, uid: thread.partnerUid || "" })}>
@@ -1042,41 +1042,91 @@ export default function SwapApp() {
         {/* ════ HOME ════ */}
         {view === "home" && (
           <div className="fi">
-            <div style={{ background: "linear-gradient(135deg,#13151f 0%,#1a1d2e 55%,#13151f 100%)", padding: "20px 16px", position: "relative", overflow: "hidden" }}>
-              <div style={{ position: "absolute", top: -30, right: -30, width: 150, height: 150, background: "radial-gradient(circle,rgba(124,106,255,.15) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
-              <p style={{ color: "#7c6aff", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 4 }}>手数料ゼロ · 完全無料</p>
-              <h2 style={{ color: "#e8eaf0", fontSize: 20, fontWeight: 900, lineHeight: 1.3, marginBottom: 13 }}>不要なものを<br /><span style={{ color: "#7c6aff" }}>価値ある交換へ</span></h2>
+            {/* ヒーローバナー */}
+            <div style={{ background: "linear-gradient(135deg,#1a1208 0%,#3d2b15 55%,#1a1208 100%)", padding: "22px 16px 18px", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: -30, right: -30, width: 180, height: 180, background: "radial-gradient(circle,rgba(212,165,116,.18) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -20, left: -20, width: 120, height: 120, background: "radial-gradient(circle,rgba(212,165,116,.1) 0%,transparent 70%)", borderRadius: "50%", pointerEvents: "none" }} />
+              <p style={{ color: "#d4a574", fontSize: 10, fontWeight: 700, letterSpacing: 3, textTransform: "uppercase", marginBottom: 6 }}>手数料ゼロ · 完全無料</p>
+              <h2 style={{ color: "#f0ede8", fontSize: 22, fontWeight: 900, lineHeight: 1.3, marginBottom: 10 }}>不要なものを<br /><span style={{ color: "#d4a574" }}>価値ある交換へ</span></h2>
+              <p style={{ color: "#8a7a6a", fontSize: 12, marginBottom: 14, lineHeight: 1.6 }}>お金を使わずに、あなたの不用品を<br />誰かの「欲しい」に変えよう。</p>
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "#7c6aff", border: "none", borderRadius: 9, padding: "9px 14px", color: "#e8eaf0", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>出品を探す →</button>
+                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "#d4a574", border: "none", borderRadius: 9, padding: "10px 18px", color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品を探す →</button>
+                <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "rgba(212,165,116,.15)", border: "1px solid rgba(212,165,116,.4)", borderRadius: 9, padding: "10px 18px", color: "#d4a574", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>出品する ➕</button>
               </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#3a3f52", marginBottom: 12 }}>
+
+            {/* 統計バー */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "#d4c4a8", marginBottom: 14 }}>
               {[[`${allItems.filter(i=>i.status!=="交換済み").length}`, "出品数"], [`${likedItems.length}`, "お気に入り"], ["¥0", "手数料"]].map(([n, l]) => (
-                <div key={l} style={{ background: "#1a1d27", padding: "11px 0", textAlign: "center" }}>
-                  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#e8eaf0" }}>{n}</div>
-                  <div style={{ fontSize: 9, color: "#6b7280", marginTop: 1 }}>{l}</div>
+                <div key={l} style={{ background: "#f7f4ef", padding: "11px 0", textAlign: "center" }}>
+                  <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 800, fontSize: 17, color: l === "手数料" ? "#16a34a" : "#1a1208" }}>{n}</div>
+                  <div style={{ fontSize: 9, color: "#8a7a6a", marginTop: 1 }}>{l}</div>
                 </div>
               ))}
             </div>
+
+            {/* 使い方3ステップ */}
+            <div style={{ margin: "0 14px 14px", background: "#fff", borderRadius: 14, padding: "14px 14px", boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", marginBottom: 12, letterSpacing: 1 }}>✦ Swapruの使い方</p>
+              <div style={{ display: "flex", gap: 0, position: "relative" }}>
+                <div style={{ position: "absolute", top: 18, left: "16.5%", right: "16.5%", height: 2, background: "linear-gradient(90deg,#d4a574,#c4813a)", zIndex: 0 }} />
+                {[["📦","出品する","不用品を写真付きで投稿"],["⟳","マッチ","交換希望が合う人を探す"],["🎉","成立！","チャットで詳細を決めて交換"]].map(([icon, title, desc], i) => (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, position: "relative", zIndex: 1 }}>
+                    <div style={{ width: 38, height: 38, background: "linear-gradient(135deg,#d4a574,#c4813a)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, boxShadow: "0 3px 10px rgba(212,165,116,.4)" }}>{icon}</div>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#1a1208", textAlign: "center" }}>{title}</p>
+                    <p style={{ fontSize: 9, color: "#8a7a6a", textAlign: "center", lineHeight: 1.4 }}>{desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* アフィリエイト */}
             <div style={{ padding: "0 14px 10px" }}><AffiliateCard ad={AFFILIATE_ADS[0]} /></div>
+
+            {/* キーワードマッチ */}
             {matchedItems.length > 0 && (
               <div style={{ margin: "0 14px 12px" }}>
-                <div style={{ background: "linear-gradient(135deg,#1e1b3a,#2d1f10)", borderRadius: 14, padding: 13, border: "2px solid rgba(124,106,255,.3)" }}>
-                  <p style={{ color: "#7c6aff", fontSize: 9, fontWeight: 700, letterSpacing: 2, marginBottom: 3 }}>✦ キーワードマッチ</p>
-                  <p style={{ color: "#e8eaf0", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{matchedItems.length}人があなたの出品物のキーワードを求めています</p>
-                  <p style={{ color: "#8892aa", fontSize: 9, marginBottom: 8, fontStyle: "italic" }}>※ 自分でザッピングして確認しよう</p>
-                  <button onClick={() => setView("match")} className="bp" style={{ width: "100%", background: "rgba(124,106,255,.15)", border: "1px solid rgba(124,106,255,.4)", borderRadius: 8, padding: 8, color: "#7c6aff", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>一覧を見る ({matchedItems.length}件) →</button>
+                <div style={{ background: "linear-gradient(135deg,#1a1208,#2d2010)", borderRadius: 14, padding: 13, border: "2px solid rgba(212,165,116,.3)" }}>
+                  <p style={{ color: "#d4a574", fontSize: 9, fontWeight: 700, letterSpacing: 2, marginBottom: 3 }}>✦ キーワードマッチ</p>
+                  <p style={{ color: "#f0ede8", fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{matchedItems.length}人があなたの出品物のキーワードを求めています</p>
+                  <p style={{ color: "#6a5a4a", fontSize: 9, marginBottom: 8, fontStyle: "italic" }}>※ 自分でザッピングして確認しよう</p>
+                  <button onClick={() => setView("match")} className="bp" style={{ width: "100%", background: "rgba(212,165,116,.18)", border: "1px solid rgba(212,165,116,.35)", borderRadius: 8, padding: 8, color: "#d4a574", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>一覧を見る ({matchedItems.length}件) →</button>
                 </div>
               </div>
             )}
+
+            {/* 新着出品 or 空状態 */}
             <div style={{ padding: "0 14px 10px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 9 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#e8eaf0" }}>🔥 新着出品</p>
-                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#6a58f0", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#1a1208" }}>🔥 新着出品</p>
+                <button onClick={() => { setView("list"); setListTab("offer"); }} className="bp" style={{ background: "none", border: "none", color: "#c4813a", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>すべて →</button>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
-                {allItems.filter(item => item.status !== "交換済み" && item.ownerUid !== user?.uid && item.owner !== user?.name).slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
-              </div>
+              {allItems.filter(item => item.status !== "交換済み" && item.ownerUid !== user?.uid && item.owner !== user?.name).length === 0 ? (
+                <div style={{ background: "#fff", borderRadius: 14, padding: "28px 20px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,.05)" }}>
+                  <div style={{ fontSize: 44, marginBottom: 10 }}>📭</div>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1208", marginBottom: 6 }}>まだ出品がありません</p>
+                  <p style={{ fontSize: 12, color: "#8a7a6a", marginBottom: 16, lineHeight: 1.6 }}>最初の出品者になってみよう！<br />不用品を交換に出すだけでOK。</p>
+                  <button onClick={() => setShowPostModal(true)} className="bp" style={{ background: "linear-gradient(135deg,#d4a574,#c4813a)", border: "none", borderRadius: 12, padding: "11px 24px", color: "#1a1208", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>➕ 最初に出品する</button>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }}>
+                  {allItems.filter(item => item.status !== "交換済み" && item.ownerUid !== user?.uid && item.owner !== user?.name).slice(0, 4).map((item, i) => <ItemCard key={item.id} item={item} liked={likedItems.includes(item.id)} onLike={toggleLike} onClick={() => openDetail(item)} delay={i * 55} />)}
+                </div>
+              )}
+            </div>
+
+            {/* 安心ポイント */}
+            <div style={{ margin: "4px 14px 14px", background: "linear-gradient(135deg,#1a1208,#3d2b15)", borderRadius: 14, padding: "14px 16px" }}>
+              <p style={{ color: "#d4a574", fontSize: 10, fontWeight: 700, letterSpacing: 2, marginBottom: 10 }}>✦ SWAPRU の安心ポイント</p>
+              {[["⟳","完全無料","出品・交換・メッセージ、すべて0円"],["🛡️","相互評価","取引後のレビューで信頼を可視化"],["💬","丁寧なチャット","成立まで直接メッセージで交渉できる"]].map(([icon, title, desc]) => (
+                <div key={title} style={{ display: "flex", gap: 11, alignItems: "center", marginBottom: 10 }}>
+                  <div style={{ width: 36, height: 36, background: "rgba(212,165,116,.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0 }}>{icon}</div>
+                  <div>
+                    <p style={{ color: "#f0ede8", fontSize: 12, fontWeight: 700 }}>{title}</p>
+                    <p style={{ color: "#8a7a6a", fontSize: 10, marginTop: 1 }}>{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
